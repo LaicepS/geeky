@@ -1,0 +1,15 @@
+#!/bin/bash
+
+cgiPath=/usr/lib/cgi-bin/
+
+if [ ! -d "$cgiPath" ]; then
+  1>2 echo "Could not find cgi directory"
+  exit 1
+fi
+
+
+sudo cp cgi/* --target-directory="$cgiPath"
+sudo chown -R www-data:www-data "$cgiPath"
+sudo chmod u+x "$cgiPath"/*
+
+#vim: filetype=sh
