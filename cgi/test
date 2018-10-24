@@ -2,25 +2,34 @@
 
 import unittest
 import cgi
-import cgitb; cgitb.enable()
+import cgitb; 
+cgitb.enable()
+
+def getComics():
+    pass
 
 print("Content-type: text/html")
 print("")
 
 print("""
 <html>
+<body>
     Lore ipsum
+""")
+
+form = cgi.FieldStorage()
+keywords = form["search"].value.split()
+
+comics = getComics()
+
+print("""
+</body>
 </html>
 """)
 
-def extractKeywords():
-    form = cgi.FieldStorage()
-
-
-keywords = extractKeywords()
 
 if __name__ == "__main__":
-    pass
+    unittest.main()
 
 # vim: set ft=python
 
