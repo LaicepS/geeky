@@ -5,6 +5,8 @@ import cgi
 import cgitb; 
 cgitb.enable()
 
+import controler
+
 def getComics():
     pass
 
@@ -20,7 +22,7 @@ print("""
 form = cgi.FieldStorage()
 keywords = form["search"].value.split()
 
-comics = getComics()
+comic_ids = get_ids(keywords)
 
 print("""
 </body>
