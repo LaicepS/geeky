@@ -36,7 +36,3 @@ class TestGetIds(unittest.TestCase):
                 get_ids(['keyword1', 'keyword2'],
                     { 'comic-id1' : 'keyword2' }))
 
-
-
-if __name__ == "__main__":
-    unittest.main()
