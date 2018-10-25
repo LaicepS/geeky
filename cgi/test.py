@@ -5,7 +5,7 @@ import cgi
 import cgitb; 
 cgitb.enable()
 
-import controler
+import controller
 
 def getComics():
     pass
