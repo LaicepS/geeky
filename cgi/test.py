@@ -7,9 +7,6 @@ cgitb.enable()
 
 import controller
 
-def getComics():
-    pass
-
 print("Content-type: text/html")
 print("")
 
