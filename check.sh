@@ -2,5 +2,5 @@
 
 set -euo pipefail
 
-find . -name "*.py" -exec python3 {} \;
+python3 -m unittest discover -s cgi/ -p "*.py"
 
