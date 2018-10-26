@@ -5,7 +5,7 @@ def get_ids(keywords, database):
     for keyword in keywords:
         for entry in database:
             if keyword in database[entry]:
-                if entry not in ans.keys():
+                if entry not in ans:
                     ans[entry] = [keyword]
                 else:
                     ans[entry].append(keyword)
