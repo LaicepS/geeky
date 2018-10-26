@@ -28,7 +28,6 @@ def main():
     print("""
     <html>
     <body>
-        Lore ipsum
     """)
 
     print(get_html())
