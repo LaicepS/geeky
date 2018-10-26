@@ -18,7 +18,7 @@ def get_html():
     return res
 
 def get_comic_html(comic):
-    return "<img src='/img/" + comic + " alt='" + comic + "'>"
+    return "<img src='/img/" + comic + ".png' alt='" + comic + "'>"
 
 def get_comic_list(keywords):
     db_file = open('/home/dorian/geeky/data/db.txt')
