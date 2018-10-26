@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 
-import unittest
 import cgi
-import cgitb; 
-cgitb.enable()
+import cgitb; cgitb.enable()
 import os
+import unittest
 
 import controller
 
