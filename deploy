@@ -8,12 +8,12 @@ if [ ! -d "$cgiPath" ]; then
 fi
 
 
-# deploy cgis
+# copy cgis
 sudo cp cgi/* --target-directory="$cgiPath"
 sudo chown -R www-data:www-data "$cgiPath"
 sudo chmod u+x "$cgiPath"/*
 
-# deploy html
+# copy html
 sudo cp html/* --target-directory=/var/www/geeky/
 
 #vim: filetype=sh
