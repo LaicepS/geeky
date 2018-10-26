@@ -7,6 +7,20 @@ cgitb.enable()
 
 import controller
 
+def get_html():
+    form = cgi.FieldStorage()
+    keywords = form["search"].value.split()
+
+def get_comic_list(keywords):
+    db_file = open('/home/dorian/geeky/data/db.txt')
+    db = controller.get_all_comics(db_file)
+    db_file.close()
+    return controller.get_ids(keywords, db)
+
+class TestGetComicList(unittest.TestCase):
+    def test_crash(self):
+        get_comic_list('foo')
+
 def main():
     print("Content-type: text/html")
     print("")
@@ -17,10 +31,8 @@ def main():
         Lore ipsum
     """)
 
-    form = cgi.FieldStorage()
-    keywords = form["search"].value.split()
+    print(get_html())
 
-    comic_ids = get_ids(keywords)
 
     print("""
     </body>
