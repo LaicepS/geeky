@@ -16,4 +16,7 @@ sudo chmod u+x "$cgiPath"/*
 # copy html
 sudo cp html/* --target-directory=/var/www/geeky/
 
+# copy imgs
+sudo cp data/*.png --target-directory=/var/www/geeky/img/
+
 #vim: filetype=sh
