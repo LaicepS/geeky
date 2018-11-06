@@ -13,7 +13,6 @@ def extract_words(img_file):
     f.close()
     return res
 
-# test simple file should return simple text
 class ExtractWordsTests(unittest.TestCase):
     # test empty file should return nothing
     def testEmptyFile(self):
