@@ -3,11 +3,33 @@ import unittest
 import shutil
 import tempfile
 
-# test easy file return easy text
-# test multiple file should return the coresponding dic
+def extract_words(img_file):
+    res = []
+    cmd = 'tesseract {} {}'.format(img_file, '/tmp/toto')
+    os.system(cmd)
+    f = open('/tmp/toto.txt')
+    for l in f.readlines():
+        res += l.strip().split()
+    f.close()
+    return res
+
+# test simple file should return simple text
+class ExtractWordsTests(unittest.TestCase):
+    # test empty file should return nothing
+    def testEmptyFile(self):
+        with tempfile.NamedTemporaryFile() as empty_file:
+            self.assertEqual([], extract_words(empty_file.name))
+
 
 def gen_dictionary(dir):
-    return {}
+    res = {}
+    for dirpath, dirnames, filenames in os.walk(dir.name, followlinks=False):
+        gif_filenames = filter(lambda f: f.lower().endswith('.gif'), filenames)
+        for gif in gif_filenames:
+            words = extract_words(gif)
+            res[gif] = words
+
+    return res
 
 class testDbGen(unittest.TestCase):
     def setUp(self):
@@ -29,7 +51,7 @@ class testDbGen(unittest.TestCase):
         shutil.copy('test.gif', self.test_dir.name)
         res = gen_dictionary(self.test_dir)
         self.assertTrue('test.gif' in res)
-        self.assertEquals('foo', res['test.gif'])
+        self.assertEqual(['FOO'], res['test.gif'])
 
     def tearDown(self):
         self.test_dir.cleanup()
