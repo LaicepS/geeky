@@ -7,11 +7,13 @@ import unittest
 
 import controller
 
+DEFAULT_DB = '/home/dorian/geeky/data/db.txt'
+
 def get_html():
     form = cgi.FieldStorage()
     keywords = form["search"].value.split()
     res = '<ul>'
-    for comic in get_comic_list(keywords, '/home/dorian/geeky/data/db.txt'):
+    for comic in get_comic_list(keywords, DEFAULT_DB):
         res += "<li>" + get_comic_html(comic) + "</li>"
     res += "</ul>"
     return res
