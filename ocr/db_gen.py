@@ -28,7 +28,8 @@ def gen_dictionary(dir):
     for dirpath, dirnames, filenames in os.walk(dir.name, followlinks=False):
         gif_filenames = filter(lambda f: f.lower().endswith('.gif'), filenames)
         for gif in gif_filenames:
-            res[gif] = extract_words(gif)
+            words = extract_words(gif)
+            res[gif] = words
 
     return res
 
