@@ -4,6 +4,7 @@ import cgi
 import cgitb; cgitb.enable()
 import os
 import unittest
+import tempfile
 
 import controller
 
@@ -28,13 +29,20 @@ def get_comic_list(keywords, database_path):
     return controller.get_ids(keywords, db)
 
 class TestGetComicList(unittest.TestCase):
-    test_db = '/home/dorian/geeky/data/db.txt'
+    def setUp(self):
+        tmp_file = tempfile.NamedTemporaryFile(mode='w+t', delete=False)
+        print('smbc-001:alligator', file = tmp_file)
+        tmp_file.close()
+        self.test_db = tmp_file.name
 
     def test_keyword_not_found(self):
         self.assertEqual({}, get_comic_list('foo', self.test_db))
 
     def test_simple_keyword(self):
         self.assertIn('smbc-001', get_comic_list(['alligator'], self.test_db))
+
+    def tearDown(self):
+        os.remove(self.test_db)
 
 def main():
     print("Content-type: text/html")
