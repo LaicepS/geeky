@@ -49,9 +49,9 @@ class testDbGen(unittest.TestCase):
 
         result = gen_dictionary(self.test_dir)
         self.assertIn('file1.gif', result)
-        self.assertEquals([], result['file1.gif'])
+        self.assertEqual([], result['file1.gif'])
         self.assertIn('file2.gif', result)
-        self.assertEquals([], result['file2.gif'])
+        self.assertEqual([], result['file2.gif'])
 
     def testBasicImg(self):
         shutil.copy('test.gif', self.test_dir.name)
