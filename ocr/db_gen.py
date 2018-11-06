@@ -20,6 +20,9 @@ class ExtractWordsTests(unittest.TestCase):
         with tempfile.NamedTemporaryFile() as empty_file:
             self.assertEqual([], extract_words(empty_file.name))
 
+    def testSimpleFile(self):
+        self.assertEqual(['FOO'], extract_words('test.gif'))
+
 
 def gen_dictionary(dir):
     res = {}
