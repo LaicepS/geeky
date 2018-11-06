@@ -28,7 +28,7 @@ def get_comic_list(keywords):
 class TestGetComicList(unittest.TestCase):
     def test_crash(self):
         self.assertEqual({}, get_comic_list('foo'))
-        self.assertTrue('smbc-001' in get_comic_list(['alligator']))
+        self.assertIn('smbc-001', get_comic_list(['alligator']))
 
 def main():
     print("Content-type: text/html")
