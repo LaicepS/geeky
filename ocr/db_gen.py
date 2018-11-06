@@ -56,7 +56,7 @@ class testDbGen(unittest.TestCase):
     def testBasicImg(self):
         shutil.copy('test.gif', self.test_dir.name)
         res = gen_dictionary(self.test_dir)
-        self.assertTrue('test.gif' in res)
+        self.assertIn('test.gif', res)
         self.assertEqual(['FOO'], res['test.gif'])
 
     def tearDown(self):
