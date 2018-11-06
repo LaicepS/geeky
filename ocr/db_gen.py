@@ -5,7 +5,7 @@ import tempfile
 
 def extract_words(img_file):
     res = []
-    cmd = 'tesseract {} {}'.format(img_file, '/tmp/toto')
+    cmd = '2> /dev/null tesseract {} {}'.format(img_file, '/tmp/toto')
     os.system(cmd)
     f = open('/tmp/toto.txt')
     for l in f.readlines():
