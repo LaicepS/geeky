@@ -26,8 +26,10 @@ def get_comic_list(keywords):
     return controller.get_ids(keywords, db)
 
 class TestGetComicList(unittest.TestCase):
-    def test_crash(self):
+    def test_keyword_not_found(self):
         self.assertEqual({}, get_comic_list('foo'))
+
+    def test_simple_keyword(self):
         self.assertIn('smbc-001', get_comic_list(['alligator']))
 
 def main():
