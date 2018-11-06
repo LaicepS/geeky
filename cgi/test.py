@@ -23,10 +23,9 @@ def get_comic_html(comic):
     return "<img src='/img/" + comic + ".png' alt='" + comic + "'>"
 
 def get_comic_list(keywords, database_path):
-    db_file = open(database_path)
-    db = controller.get_all_comics(db_file.read().splitlines())
-    db_file.close()
-    return controller.get_ids(keywords, db)
+    with open(database_path) as db_file:
+        db = controller.get_all_comics(db_file.read().splitlines())
+        return controller.get_ids(keywords, db)
 
 class TestGetComicList(unittest.TestCase):
     def setUp(self):
