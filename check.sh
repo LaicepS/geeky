@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-python3 -m unittest discover -s cgi/ -p "*.py"
-python3 -m unittest discover -s scrapper/ -p "*.py"
-python3 -m unittest discover -s ocr/ -p "*.py"
-
+for dir in cgi scrapper ocr
+do
+  python3 -m unittest discover -s "$dir"/ -p "*.py"
+done
