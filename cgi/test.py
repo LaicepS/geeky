@@ -11,7 +11,7 @@ def get_html():
     form = cgi.FieldStorage()
     keywords = form["search"].value.split()
     res = '<ul>'
-    for comic in get_comic_list(keywords):
+    for comic in get_comic_list(keywords, '/home/dorian/geeky/data/db.txt'):
         res += "<li>" + get_comic_html(comic) + "</li>"
     res += "</ul>"
     return res
@@ -19,18 +19,20 @@ def get_html():
 def get_comic_html(comic):
     return "<img src='/img/" + comic + ".png' alt='" + comic + "'>"
 
-def get_comic_list(keywords):
-    db_file = open('/home/dorian/geeky/data/db.txt')
+def get_comic_list(keywords, database_path):
+    db_file = open(database_path)
     db = controller.get_all_comics(db_file.read().splitlines())
     db_file.close()
     return controller.get_ids(keywords, db)
 
 class TestGetComicList(unittest.TestCase):
+    test_db = '/home/dorian/geeky/data/db.txt'
+
     def test_keyword_not_found(self):
-        self.assertEqual({}, get_comic_list('foo'))
+        self.assertEqual({}, get_comic_list('foo', self.test_db))
 
     def test_simple_keyword(self):
-        self.assertIn('smbc-001', get_comic_list(['alligator']))
+        self.assertIn('smbc-001', get_comic_list(['alligator'], self.test_db))
 
 def main():
     print("Content-type: text/html")
