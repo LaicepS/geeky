@@ -21,7 +21,7 @@ def get_comic_html(comic):
 
 def get_comic_list(keywords):
     db_file = open('/home/dorian/geeky/data/db.txt')
-    db = controller.get_all_comics(db_file.read().split(os.linesep))
+    db = controller.get_all_comics(db_file.read().splitlines())
     db_file.close()
     return controller.get_ids(keywords, db)
 
