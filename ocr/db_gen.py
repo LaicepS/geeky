@@ -42,13 +42,15 @@ class testDbGen(unittest.TestCase):
         self.assertEqual({}, gen_dictionary(self.test_dir))
 
     def testEmptyFiles(self):
-        for file_name in ['file1', 'file2']:
+        for file_name in ['file1.gif', 'file2.gif']:
             file_path = os.path.join(self.test_dir.name, file_name)
             f = open(file_path, "wb")
             f.write(''.encode())
             f.close()
 
-        self.assertEqual({}, gen_dictionary(self.test_dir))
+        result = gen_dictionary(self.test_dir)
+        self.assertIn('file1.gif', result)
+        self.assertIn('file2.gif', result)
 
     def testBasicImg(self):
         shutil.copy('test.gif', self.test_dir.name)
