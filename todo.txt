@@ -1,5 +1,4 @@
 TODO:
-refactor check.sh unittest runs
-
 # test multiple file should return the coresponding dic
 # extract_words should not always use the same file
+# tesseract should be less verbose
