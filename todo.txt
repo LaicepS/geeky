@@ -2,6 +2,5 @@ TODO:
 # extract_words should not always use the same file
 # tesseract errors should be transformed to our own errors
 # get the tesseract error messages back
-# get_comic_list: remove hard-coded file
 # replace img in the server with links to the actual img
 # get the img's url in the database
