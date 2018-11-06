@@ -1,0 +1,6 @@
+TODO:
+refactor check.sh unittest runs
+
+# test multiple file should return the coresponding dic
+# extract_words should not always use the same file
+# move the simple file test from the gen_dictionary function to the extract_words function
