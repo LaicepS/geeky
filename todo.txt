@@ -4,3 +4,7 @@ TODO:
 # get the tesseract error messages back
 # replace img in the server with links to the actual img
 # get the img's url in the database
+# improve gui
+# generer la database pour de vrai
+# parser la database
+# en cherchant un keyword, juste afficher le nom de comics correspondant
