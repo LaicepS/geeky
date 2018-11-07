@@ -5,12 +5,14 @@ import tempfile
 
 def extract_words(img_file):
     res = []
-    cmd = '2> /dev/null tesseract {} {}'.format(img_file, '/tmp/toto')
-    os.system(cmd)
-    f = open('/tmp/toto.txt')
-    for l in f.readlines():
-        res += l.strip().split()
-    f.close()
+    with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+        tmp_file.close()
+        cmd = '2> /dev/null tesseract {} stdout > {}'.format(img_file, tmp_file.name)
+        os.system(cmd)
+        f = open(tmp_file.name)
+        for l in f.readlines():
+            res += l.strip().split()
+        f.close()
     return res
 
 class ExtractWordsTests(unittest.TestCase):

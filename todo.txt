@@ -1,5 +1,5 @@
 TODO:
-# extract_words should not always use the same file
+# rename cgi/test.py
 # tesseract errors should be transformed to our own errors
 # get the tesseract error messages back
 # replace img in the server with links to the actual img
