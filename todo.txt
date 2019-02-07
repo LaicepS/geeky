@@ -7,3 +7,4 @@ TODO:
 # generer la database pour de vrai
 # parser la database
 # en cherchant un keyword, juste afficher le nom de comics correspondant
+# create a simple binary to query the database
