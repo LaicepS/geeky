@@ -12,10 +12,7 @@ class ComicsSpider(scrapy.Spider):
         if self.counter >= 10:
             return None
 
-        img_url = response.css('img.img-comic::attr(src)').extract_first()
-        img = urllib.request.urlopen(img_url)
-        dst_file = open(self.getFileName(), 'wb')
-        shutil.copyfileobj(img, dst_file)
+        self.copyImageOnDisk(response)
 
         previous_img_link = response.css('div.nav-left a::attr(href)').extract_first()
         if previous_img_link is not None:
@@ -23,6 +20,13 @@ class ComicsSpider(scrapy.Spider):
             yield response.follow(previous_img_link, self.parse)
         else:
             return None
+
+    def copyImageOnDisk(self, response):
+        img_url = response.css('img.img-comic::attr(src)').extract_first()
+        img = urllib.request.urlopen(img_url)
+        dst_file = open(self.getFileName(), 'wb')
+        shutil.copyfileobj(img, dst_file)
+
 
     def getFileName(self):
         return 'dilbert-{}.gif'.format(self.counter)
