@@ -16,7 +16,7 @@ class ComicsSpider(scrapy.Spider):
     counter = 0
 
     def parse(self, response):
-        if self.counter >= 10:
+        if self.counter >= 1:
             return None
 
         self.copyImageOnDisk(response)
