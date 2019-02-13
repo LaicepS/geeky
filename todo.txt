@@ -8,3 +8,6 @@ TODO:
 # en cherchant un keyword, juste afficher le nom de comics correspondant
 # create a simple binary to query the database
 # store a precomputed SQL databse for the comics
+# find a way to check if the venv has been activated from the check.sh script. If it hasn't, prompt the user to do it
+and exit
+# findout why the spider tests won't fail (does copying a unittest object work?)
