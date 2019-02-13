@@ -3,6 +3,13 @@ import shutil
 import tempfile
 import urllib.response
 
+def cleanUp(url):
+    if url[0:2] == '//':
+        return 'http:' + url
+    else:
+        return url
+
+
 class ComicsSpider(scrapy.Spider):
     name = 'Comics Spider'
     start_urls = [ 'http://dilbert.com/strip/2018-11-05' ]
@@ -23,16 +30,10 @@ class ComicsSpider(scrapy.Spider):
 
     def copyImageOnDisk(self, response):
         img_url = response.css('img.img-comic::attr(src)').extract_first()
-        img_url = self.cleanUp(img_url)
+        img_url = cleanUp(img_url)
         img = urllib.request.urlopen(img_url)
         dst_file = open(self.getFileName(), 'wb')
         shutil.copyfileobj(img, dst_file)
-
-    def cleanUp(self, url):
-        if url[0:2] == '//':
-            return 'http:' + url
-        else:
-            return url
 
     def getFileName(self):
         return 'dilbert-{}.gif'.format(self.counter)
