@@ -23,10 +23,16 @@ class ComicsSpider(scrapy.Spider):
 
     def copyImageOnDisk(self, response):
         img_url = response.css('img.img-comic::attr(src)').extract_first()
+        img_url = self.cleanUp(img_url)
         img = urllib.request.urlopen(img_url)
         dst_file = open(self.getFileName(), 'wb')
         shutil.copyfileobj(img, dst_file)
 
+    def cleanUp(self, url):
+        if url[0:2] == '//':
+            return 'http:' + url
+        else:
+            return url
 
     def getFileName(self):
         return 'dilbert-{}.gif'.format(self.counter)
