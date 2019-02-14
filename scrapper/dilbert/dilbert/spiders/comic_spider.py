@@ -36,8 +36,7 @@ class ComicsSpider(scrapy.Spider):
         img_url = response.css('img.img-comic::attr(src)').extract_first()
         img_url = cleanUp(img_url)
         img = urllib.request.urlopen(img_url)
-        dst_file = open(self.getFileName(), 'wb')
-        shutil.copyfileobj(img, dst_file)
+        dst_file = open(self.getFileName(), 'rb')
 
         if self.listener != None:
             self.listener.onImg(dst_file)
