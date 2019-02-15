@@ -1,6 +1,5 @@
 import argparse
 
-import controller
 import MySQLdb as mdb
 
 def parseArgs():
