@@ -1,3 +1,4 @@
+import sys
 import argparse
 
 import MySQLdb as mdb
@@ -22,8 +23,8 @@ def main():
             if kw[0] in row[2]:
                 print(row)
 
-    except e:
-       stderr.print(e, file=stderr)
+    except Exception as e:
+       print(e, file=sys.stderr)
 
 
     return args
