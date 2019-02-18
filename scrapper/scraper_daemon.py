@@ -1,3 +1,5 @@
+import sys
+import unittest
 import shutil
 import io
 
@@ -17,9 +19,22 @@ def extract_text(img_path):
     
 
 class SpiderListener:
+    def __init__(self, dbcursor):
+        self.dbcursor = dbcursor
+
     def onImg(self, img_data):
-        print(extract_text(io.BytesIO(img_data)))
-        return True
+        try:
+            img_id = abs(hash(img_data))
+            img_text = extract_text(io.BytesIO(img_data))
+            self.dbcursor.execute(
+                    "insert into comics(id, origin, keywords) values(%s, 'dilbert', %s)",
+                    (img_id, img_text))
+            return True
+
+        except mdb.Error or mdb.DatabaseError or mdb.DataError as e:
+            print("Error: {}".format(e), file=sys.stderr)
+            return False
+
 
 
 def main():
@@ -30,9 +45,10 @@ def main():
 
         process = CrawlerProcess({'USER_AGENT' : 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)',
             'LOG_LEVEL' : 'WARNING'})
-        spiderListener = SpiderListener()
+        spiderListener = SpiderListener(cursor)
         process.crawl(ComicsSpider, spiderListener)
         process.start()
+        conn.commit()
 
     except mdb.Error or mdb.DatabaseError or mdb.DataError as e:
         print("Error: {}".format(e), file=sys.stderr)
