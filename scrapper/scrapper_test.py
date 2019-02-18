@@ -12,7 +12,7 @@ class SpiderListener:
         self.testObject = testObject
 
     def onImg(self, img_file):
-        self.testObject.assertTrue(img_file.readable())
+        self.testObject.assertTrue(img_file != None)
 
 
 class ComicSpiderTest(unittest.TestCase):
