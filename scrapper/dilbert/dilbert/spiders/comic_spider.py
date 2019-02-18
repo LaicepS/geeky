@@ -23,7 +23,7 @@ class ComicsSpider(scrapy.Spider):
         if self.counter >= 1:
             return None
 
-        self.copyImageOnDisk(response)
+        self.handleResponse(response)
 
         previous_img_link = response.css('div.nav-left a::attr(href)').extract_first()
         if previous_img_link is not None:
@@ -32,7 +32,7 @@ class ComicsSpider(scrapy.Spider):
         else:
             return None
 
-    def copyImageOnDisk(self, response):
+    def handleResponse(self, response):
         img_url = response.css('img.img-comic::attr(src)').extract_first()
         img_url = cleanUp(img_url)
         img = urllib.request.urlopen(img_url)
