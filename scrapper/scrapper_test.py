@@ -8,8 +8,6 @@ import unittest
 from  dilbert.dilbert.spiders.comic_spider import ComicsSpider
 
 class SpiderListener:
-    testObject = None
-
     def __init__(self, testObject):
         self.testObject = testObject
 
