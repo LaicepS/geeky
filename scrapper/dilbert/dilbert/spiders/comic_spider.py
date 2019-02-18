@@ -33,13 +33,14 @@ class ComicsSpider(scrapy.Spider):
             return None
 
     def handleResponse(self, response):
+        if self.listener == None:
+            return
+
         img_url = response.css('img.img-comic::attr(src)').extract_first()
         img_url = cleanUp(img_url)
         img = urllib.request.urlopen(img_url)
         dst_file = open(self.getFileName(), 'rb')
-
-        if self.listener != None:
-            self.listener.onImg(dst_file)
+        self.listener.onImg(dst_file)
 
     def getFileName(self):
         return 'dilbert-{}.gif'.format(self.counter)
