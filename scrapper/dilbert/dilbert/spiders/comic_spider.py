@@ -9,7 +9,6 @@ def cleanUp(url):
     else:
         return url
 
-
 class ComicsSpider(scrapy.Spider):
     name = 'Comics Spider'
     start_urls = [ 'http://dilbert.com/strip/2018-11-05' ]
@@ -23,7 +22,8 @@ class ComicsSpider(scrapy.Spider):
         if self.counter >= 1:
             return None
 
-        self.handleResponse(response)
+        if not self.handleResponse(response):
+            return None
 
         previous_img_link = response.css('div.nav-left a::attr(href)').extract_first()
         if previous_img_link is not None:
@@ -34,13 +34,13 @@ class ComicsSpider(scrapy.Spider):
 
     def handleResponse(self, response):
         if self.listener == None:
-            return
+            return False
 
         img_url = response.css('img.img-comic::attr(src)').extract_first()
         img_url = cleanUp(img_url)
         img = urllib.request.urlopen(img_url)
         dst_file = open(self.getFileName(), 'rb')
-        self.listener.onImg(dst_file)
+        return self.listener.onImg(dst_file)
 
     def getFileName(self):
         return 'dilbert-{}.gif'.format(self.counter)
