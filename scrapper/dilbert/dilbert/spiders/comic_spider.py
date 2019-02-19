@@ -1,7 +1,7 @@
 import scrapy
 import shutil
 import tempfile
-import urllib.response
+import urllib
 
 def cleanUp(url):
     if url[0:2] == '//':
