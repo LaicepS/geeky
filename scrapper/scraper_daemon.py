@@ -16,8 +16,16 @@ import MySQLdb as mdb
 
 # return is in the format 1YYMMDD (1 stands for dilbert)
 def id_from_url(url):
-    date = url.split('strip/')[1]
+    splits = url.split('strip/')
+    if len(splits) != 2:
+        raise Exception("Unknown URL format")
+
+    date = splits[1]
+
     periods = date.split('-')
+    if len(periods) != 3:
+        raise Exception("Unknown URL format")
+
     return 1*1000000 \
             + (int(periods[0])%100)*10000 \
             + int(periods[1])*100 \
@@ -27,6 +35,13 @@ class IdFromUrlTest(unittest.TestCase):
     def testIdFromUrl(self):
         self.assertEqual(1000124,
         id_from_url('https://dilbert.com/strip/2000-01-24'))
+
+    def testInvalidUrl(self):
+        with self.assertRaises(Exception):
+            id_from_url('invalid_url')
+        with self.assertRaises(Exception):
+            id_from_url('dilbert.com/strip/invalide_date')
+
 
 def to_ascii(s):
     return ''.join([c if ord(c) < 128 else ' ' for c in s])
