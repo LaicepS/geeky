@@ -11,7 +11,7 @@ def cleanUp(url):
 
 class ComicsSpider(scrapy.Spider):
     name = 'Comics Spider'
-    start_urls = [ 'http://dilbert.com/strip/2018-11-05' ]
+    start_urls = [ 'http://dilbert.com/strip/2018-11-04' ]
     counter = 0
     listener = None
 

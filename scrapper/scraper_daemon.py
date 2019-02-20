@@ -28,8 +28,11 @@ class IdFromUrlTest(unittest.TestCase):
         self.assertEqual(1000124,
         id_from_url('https://dilbert.com/strip/2000-01-24'))
 
+def to_ascii(s):
+    return ''.join([c if ord(c) < 128 else ' ' for c in s])
+
 def extract_text(img_path):
-    return pytesseract.image_to_string(Image.open(img_path))
+    return to_ascii(pytesseract.image_to_string(Image.open(img_path)))
     
 
 class SpiderListener:
