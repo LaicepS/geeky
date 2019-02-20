@@ -39,7 +39,7 @@ class ComicsSpider(scrapy.Spider):
         img_url = response.css('img.img-comic::attr(src)').extract_first()
         img_url = cleanUp(img_url)
         img = urllib.request.urlopen(img_url)
-        return self.listener.onImg(img.read())
+        return self.listener.onImg(response.url, img.read())
 
     def getFileName(self):
         return 'dilbert-{}.gif'.format(self.counter)

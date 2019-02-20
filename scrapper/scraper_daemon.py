@@ -14,6 +14,20 @@ from  dilbert.dilbert.spiders.comic_spider import ComicsSpider
 
 import MySQLdb as mdb
 
+# return is in the format 1YYMMDD (1 stands for dilbert)
+def id_from_url(url):
+    date = url.split('strip/')[1]
+    periods = date.split('-')
+    return 1*1000000 \
+            + (int(periods[0])%100)*10000 \
+            + int(periods[1])*100 \
+            + int(periods[2])
+
+class IdFromUrlTest(unittest.TestCase):
+    def testIdFromUrl(self):
+        self.assertEqual(1000124,
+        id_from_url('https://dilbert.com/strip/2000-01-24'))
+
 def extract_text(img_path):
     return pytesseract.image_to_string(Image.open(img_path))
     
@@ -22,9 +36,9 @@ class SpiderListener:
     def __init__(self, dbcursor):
         self.dbcursor = dbcursor
 
-    def onImg(self, img_data):
+    def onImg(self, url, img_data):
         try:
-            img_id = abs(hash(img_data))
+            img_id = id_from_url(url)
             img_text = extract_text(io.BytesIO(img_data))
             self.dbcursor.execute(
                     "insert into comics(id, origin, keywords) values(%s, 'dilbert', %s)",

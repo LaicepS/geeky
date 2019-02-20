@@ -11,7 +11,8 @@ class SpiderListener:
     def __init__(self, testObject):
         self.testObject = testObject
 
-    def onImg(self, img_file):
+    def onImg(self, url, img_file):
+        self.testObject.assertTrue(len(url) != 0)
         self.testObject.assertTrue(img_file != None)
 
 
