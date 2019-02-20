@@ -31,8 +31,27 @@ class IdFromUrlTest(unittest.TestCase):
 def to_ascii(s):
     return ''.join([c if ord(c) < 128 else ' ' for c in s])
 
+def trim_whitespaces(s):
+    return ' '.join(s.split())
+
+
+class TestTrimWhiteSpaces(unittest.TestCase):
+    def testOneWord(self):
+        self.assertEqual("foo", trim_whitespaces("foo"))
+
+    def testOneWordWithSpaces(self):
+        self.assertEqual("foo", trim_whitespaces(" \nfoo  \n"))
+
+    def testEmptyString(self):
+        self.assertEqual("", trim_whitespaces(""))
+
+    def testSeveralWords(self):
+        self.assertEqual("several words to test",
+                trim_whitespaces("\n  several  \twords \n\n to test"))
+
 def extract_text(img_path):
-    return to_ascii(pytesseract.image_to_string(Image.open(img_path)))
+    return trim_whitespaces(
+            to_ascii(pytesseract.image_to_string(Image.open(img_path))))
     
 
 class SpiderListener:
