@@ -12,6 +12,8 @@ import pytesseract
 
 from  dilbert.dilbert.spiders.comic_spider import ComicsSpider
 
+import pymysql
+pymysql.install_as_MySQLdb()
 import MySQLdb as mdb
 
 # return is in the format 1YYMMDD (1 stands for dilbert)
