@@ -5,6 +5,7 @@ cffi==1.12.3
 constantly==15.1.0
 cryptography==2.7
 cssselect==1.1.0
+Django==2.2.6
 -e git+https://github.com/LaicepS/geeky.git@1b9f5776cd443209ea64b826d51801f465f85f2d#egg=Geeky
 hyperlink==19.0.0
 idna==2.8
@@ -21,10 +22,12 @@ PyHamcrest==1.9.0
 PyMySQL==0.9.3
 pyOpenSSL==19.0.0
 pytesseract==0.3.0
+pytz==2019.3
 queuelib==1.5.0
 Scrapy==1.7.3
 service-identity==18.1.0
 six==1.12.0
+sqlparse==0.3.0
 Twisted==19.7.0
 w3lib==1.21.0
 zope.interface==4.6.0
