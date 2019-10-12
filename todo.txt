@@ -1,4 +1,5 @@
 TODO:
+# make first end2end pass: maybe use django?
 # tesseract errors should be transformed to our own errors
 # get the tesseract error messages back
 # replace img in the server with links to the actual img
