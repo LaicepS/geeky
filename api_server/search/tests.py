@@ -12,7 +12,7 @@ class End2EndTest(TestCase):
             origin = 'Doiran',
         )
 
-    def test_basic_end2end_test(self):
+    def test_basic_end2end(self):
         client = Client()
         get_request = client.get('/search/', {'keywords' : 'foo'})
         assert get_request.status_code == 200
