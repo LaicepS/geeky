@@ -13,7 +13,10 @@ def index(request):
     except Comic.DoesNotExist:
         comic = None
 
-    if comic is not None:
-        return HttpResponse(json.dumps({'origin': comic.origin, 'url': comic.url}))
-    else:
-        return HttpResponse(json.dumps({}))
+    return HttpResponse(serialize_comic(comic))
+
+def serialize_comic(comic):
+    if comic is None:
+        return json.dumps({})
+
+    return json.dumps({'origin': comic.origin, 'url': comic.url})
