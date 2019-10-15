@@ -18,3 +18,8 @@ class End2EndTest(TestCase):
         assert get_request.status_code == 200
         response = json.loads(get_request.getvalue())
         assert {'origin': 'Doiran', 'url': 'http://toto.com'} == response
+
+    def test_missing_comic(self):
+        client = Client()
+        get_request = client.get('/search/', {'keywords' : 'missing_keyword'})
+        assert get_request.status_code == 404
