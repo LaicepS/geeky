@@ -8,15 +8,16 @@ from search.models import Comic
 def index(request):
     request_params = request.GET
     query = Comic.objects.filter(keywords__contains=request_params['keywords'])
+    comic_list = []
     try:
-        comic = query.get()
+        comic_list.append(query.get())
     except Comic.DoesNotExist:
-        comic = None
+        pass
 
-    return HttpResponse(serialize_comic(comic))
+    return HttpResponse(json.dumps([serialize_comic(comic) for comic in comic_list]))
 
 def serialize_comic(comic):
     if comic is None:
-        return json.dumps({})
+        return {}
 
-    return json.dumps({'origin': comic.origin, 'url': comic.url})
+    return {'origin': comic.origin, 'url': comic.url}

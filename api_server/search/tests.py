@@ -16,10 +16,10 @@ class End2EndTest(TestCase):
         get_request = self.client.get('/search/', {'keywords' : 'foo'})
         assert get_request.status_code == 200
         response = json.loads(get_request.getvalue())
-        assert {'origin': 'Doiran', 'url': 'http://toto.com'} == response
+        assert [{'origin': 'Doiran', 'url': 'http://toto.com'}] == response
 
     def test_missing_comic(self):
         get_request = self.client.get('/search/', {'keywords' : 'missing_keyword'})
         assert get_request.status_code == 200
         response = json.loads(get_request.getvalue())
-        assert {} == response
+        assert [] == response
