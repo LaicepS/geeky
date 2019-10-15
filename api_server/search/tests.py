@@ -20,4 +20,6 @@ class End2EndTest(TestCase):
 
     def test_missing_comic(self):
         get_request = self.client.get('/search/', {'keywords' : 'missing_keyword'})
-        assert get_request.status_code == 404
+        assert get_request.status_code == 200
+        response = json.loads(get_request.getvalue())
+        assert {} == response
