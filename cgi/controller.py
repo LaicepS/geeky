@@ -1,5 +1,6 @@
 import unittest
 
+
 def get_ids(keywords, database):
     ans = {}
     for keyword in keywords:
@@ -12,42 +13,48 @@ def get_ids(keywords, database):
 
     return ans
 
-class TestGetIds(unittest.TestCase):
 
+class TestGetIds(unittest.TestCase):
     def test_empty(self):
-        self.assertEqual({}, get_ids([''], {}))
+        self.assertEqual({}, get_ids([""], {}))
 
     def test_keyword_doesnt_match(self):
-        self.assertEqual({}, get_ids(['keywordNotFound'], {}))
+        self.assertEqual({}, get_ids(["keywordNotFound"], {}))
 
     def test_basic_match(self):
-        self.assertEqual({'comic-id' : ['my-keyword']}, 
-                get_ids(['my-keyword'], {'comic-id' : ['my-keyword']}))
+        self.assertEqual(
+            {"comic-id": ["my-keyword"]},
+            get_ids(["my-keyword"], {"comic-id": ["my-keyword"]}),
+        )
 
     def test_several_matches(self):
         self.assertEqual(
-                {'comic-id1' : ['keyword2'], 'comic-id2' : ['keyword1']},
-                get_ids(['keyword1', 'keyword2'], 
-                    { 'comic-id1' : 'keyword2', 'comic-id2' : 'keyword1' }))
+            {"comic-id1": ["keyword2"], "comic-id2": ["keyword1"]},
+            get_ids(
+                ["keyword1", "keyword2"],
+                {"comic-id1": "keyword2", "comic-id2": "keyword1"},
+            ),
+        )
 
     def test_one_keyword_matches(self):
         self.assertEqual(
-                {'comic-id1' : ['keyword2']},
-                get_ids(['keyword1', 'keyword2'],
-                    { 'comic-id1' : 'keyword2' }))
+            {"comic-id1": ["keyword2"]},
+            get_ids(["keyword1", "keyword2"], {"comic-id1": "keyword2"}),
+        )
+
 
 def parse_comics_db_line(line):
-    if line == '':
+    if line == "":
         return None
 
-    first_split = line.split(':')
+    first_split = line.split(":")
 
     if len(first_split) != 2:
         return None
 
     id_ = first_split[0]
-    keywords = first_split[1].split(',')
-    return id_,keywords
+    keywords = first_split[1].split(",")
+    return id_, keywords
 
 
 class TestParseDbLine(unittest.TestCase):
@@ -58,13 +65,15 @@ class TestParseDbLine(unittest.TestCase):
         self.assertEqual(None, parse_comics_db_line("not a valid syntax"))
 
     def test_parse_minimal(self):
-        self.assertEqual(('comic_id', ['keyword']), 
-                parse_comics_db_line('comic_id:keyword'))
+        self.assertEqual(
+            ("comic_id", ["keyword"]), parse_comics_db_line("comic_id:keyword")
+        )
 
     def test_parse_multiple_keywords(self):
-        self.assertEqual(('comic_id', ['keyword1', 'keyword2']), 
-                parse_comics_db_line('comic_id:keyword1,keyword2'))
-
+        self.assertEqual(
+            ("comic_id", ["keyword1", "keyword2"]),
+            parse_comics_db_line("comic_id:keyword1,keyword2"),
+        )
 
 
 def get_all_comics(lines):
@@ -83,13 +92,18 @@ def get_all_comics(lines):
 
     return ans
 
+
 class TestInsertDbLines(unittest.TestCase):
     def test_double_insertion(self):
-        self.assertEqual({'same_comic_id' : ['same_keyword']},
-                get_all_comics(['same_comic_id:same_keyword',
-                'same_comic_id:same_keyword'
-                ]))
+        self.assertEqual(
+            {"same_comic_id": ["same_keyword"]},
+            get_all_comics(
+                ["same_comic_id:same_keyword", "same_comic_id:same_keyword"]
+            ),
+        )
 
     def test_multiple_occurence(self):
-        self.assertEqual({'comic_id' : ['keyword1', 'keyword2']},
-                get_all_comics(['comic_id:keyword1', 'comic_id:keyword2']))
+        self.assertEqual(
+            {"comic_id": ["keyword1", "keyword2"]},
+            get_all_comics(["comic_id:keyword1", "comic_id:keyword2"]),
+        )
