@@ -48,3 +48,12 @@ class End2EndTest(TestCase):
             ],
             self.get_search_response({"keywords": "bar"}),
         )
+
+    def test_more_matches_first(self):
+        self.assertEqual(
+            [
+                {"origin": "Doiran", "url": "http://toto.com"},
+                {"origin": "Doiran", "url": "http://toto.com/2"},
+            ],
+            self.get_search_response({"keywords": ["foo", "bar"]}),
+        )

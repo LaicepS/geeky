@@ -1,3 +1,5 @@
+import operator
+
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 
@@ -9,14 +11,18 @@ from search.models import Comic
 def index(request):
     request_params = request.GET
 
-    comic_list = set()
+    comic_list = dict()
     for kw in request_params.getlist("keywords"):
         query = Comic.objects.filter(keywords__contains=kw)
-        try:
-            [comic_list.add(comic) for comic in query]
-        except Comic.DoesNotExist:
-            pass
+        for comic in query:
+            if comic in comic_list.keys():
+                comic_list[comic] += 1
+            else:
+                comic_list[comic] = 1
 
+    comic_list = dict(
+        sorted(comic_list.items(), key=operator.itemgetter(1), reverse=True)
+    )
     return HttpResponse(json.dumps([serialize_comic(comic) for comic in comic_list]))
 
 
