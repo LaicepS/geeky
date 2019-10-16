@@ -48,3 +48,16 @@ class End2EndTest(TestCase):
             }
         ], response)
 
+    def test_one_kw_match_many(self):
+        get_request = self.get_search({'keywords': 'bar'})
+        assert get_request.status_code == 200
+        response = json.loads(get_request.getvalue())
+        self.assertEqual([
+            {
+                'origin': 'Doiran',
+                'url': 'http://toto.com'
+            },
+            {
+                'origin': 'Doiran',
+                'url': 'http://toto.com/2'
+            }], response)
