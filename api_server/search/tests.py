@@ -24,10 +24,11 @@ class End2EndTest(TestCase):
         return json.loads(get_request.getvalue())
 
     def test_basic_end2end(self):
-        assert [{'origin': 'Doiran', 'url': 'http://toto.com'}] == self.get_search_response({'keywords' : 'foo'})
+        self.assertEqual([{'origin': 'Doiran', 'url': 'http://toto.com'}],
+                self.get_search_response({'keywords' : 'foo'}))
 
     def test_missing_comic(self):
-        assert [] == self.get_search_response({'keywords' : 'missing_keyword'})
+        self.assertEqual([], self.get_search_response({'keywords' : 'missing_keyword'}))
 
     def test_several_keywords(self):
         self.assertEqual([
