@@ -18,25 +18,18 @@ class End2EndTest(TestCase):
             origin = 'Doiran',
         )
 
-    def get_search(self, args):
-        return self.client.get('/search/', args)
+    def get_search_response(self, args):
+        get_request = self.client.get('/search/', args)
+        self.assertEquals(get_request.status_code, 200)
+        return json.loads(get_request.getvalue())
 
     def test_basic_end2end(self):
-        get_request = self.get_search({'keywords' : 'foo'})
-        assert get_request.status_code == 200
-        response = json.loads(get_request.getvalue())
-        assert [{'origin': 'Doiran', 'url': 'http://toto.com'}] == response
+        assert [{'origin': 'Doiran', 'url': 'http://toto.com'}] == self.get_search_response({'keywords' : 'foo'})
 
     def test_missing_comic(self):
-        get_request = self.get_search({'keywords' : 'missing_keyword'})
-        assert get_request.status_code == 200
-        response = json.loads(get_request.getvalue())
-        assert [] == response
+        assert [] == self.get_search_response({'keywords' : 'missing_keyword'})
 
     def test_several_keywords(self):
-        get_request = self.get_search({'keywords' : ['foo', 'bar', 'toto']})
-        assert get_request.status_code == 200
-        response = json.loads(get_request.getvalue())
         self.assertEqual([
             {
                 'origin': 'Doiran',
@@ -46,12 +39,9 @@ class End2EndTest(TestCase):
                 'origin': 'Doiran',
                 'url': 'http://toto.com/2'
             }
-        ], response)
+        ], self.get_search_response({'keywords' : ['foo', 'bar', 'toto']}))
 
     def test_one_kw_match_many(self):
-        get_request = self.get_search({'keywords': 'bar'})
-        assert get_request.status_code == 200
-        response = json.loads(get_request.getvalue())
         self.assertEqual([
             {
                 'origin': 'Doiran',
@@ -60,4 +50,4 @@ class End2EndTest(TestCase):
             {
                 'origin': 'Doiran',
                 'url': 'http://toto.com/2'
-            }], response)
+            }], self.get_search_response({'keywords': 'bar'}))
