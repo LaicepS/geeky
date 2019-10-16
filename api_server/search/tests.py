@@ -6,17 +6,26 @@ from django.test import TestCase, Client
 class End2EndTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        Comic.objects.create(
-            url = 'http://toto.com',
-            keywords = 'foo bar joke',
-            origin = 'Doiran',
-        )
+        db_comics = [
+            {
+                'url' : 'http://toto.com',
+                'keywords' : 'foo bar joke',
+                'origin' : 'Doiran',
+            },
+            {
+                'url': 'http://toto.com/2',
+                'keywords': 'bar joke',
+                'origin': 'Doiran',
+            }
+        ]
 
-        Comic.objects.create(
-            url = 'http://toto.com/2',
-            keywords = 'bar joke',
-            origin = 'Doiran',
-        )
+        for c in db_comics:
+            Comic.objects.create(
+                url = c['url'],
+                keywords = c['keywords'],
+                origin = c['origin']
+            )
+
 
     def get_search_response(self, args):
         get_request = self.client.get('/search/', args)
