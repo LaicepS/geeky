@@ -5,14 +5,14 @@ from django.test import TestCase, Client
 
 
 class End2EndTest(TestCase):
+    db_comics = [
+        {"url": "http://toto.com", "keywords": "foo bar joke", "origin": "Doiran"},
+        {"url": "http://toto.com/2", "keywords": "bar joke", "origin": "Doiran"},
+    ]
+
     @classmethod
     def setUpTestData(cls):
-        db_comics = [
-            {"url": "http://toto.com", "keywords": "foo bar joke", "origin": "Doiran"},
-            {"url": "http://toto.com/2", "keywords": "bar joke", "origin": "Doiran"},
-        ]
-
-        for c in db_comics:
+        for c in cls.db_comics:
             Comic.objects.create(
                 url=c["url"], keywords=c["keywords"], origin=c["origin"]
             )
@@ -24,7 +24,7 @@ class End2EndTest(TestCase):
 
     def test_basic_end2end(self):
         self.assertEqual(
-            [{"origin": "Doiran", "url": "http://toto.com"}],
+            [remove_keywords(self.db_comics[0])],
             self.get_search_response({"keywords": "foo"}),
         )
 
@@ -34,8 +34,8 @@ class End2EndTest(TestCase):
     def test_several_keywords(self):
         self.assertEqual(
             [
-                {"origin": "Doiran", "url": "http://toto.com"},
-                {"origin": "Doiran", "url": "http://toto.com/2"},
+                remove_keywords(self.db_comics[0]),
+                remove_keywords(self.db_comics[1]),
             ],
             self.get_search_response({"keywords": ["foo", "bar", "toto"]}),
         )
@@ -43,8 +43,8 @@ class End2EndTest(TestCase):
     def test_one_kw_match_many(self):
         self.assertEqual(
             [
-                {"origin": "Doiran", "url": "http://toto.com"},
-                {"origin": "Doiran", "url": "http://toto.com/2"},
+                remove_keywords(self.db_comics[0]),
+                remove_keywords(self.db_comics[1]),
             ],
             self.get_search_response({"keywords": "bar"}),
         )
@@ -52,8 +52,11 @@ class End2EndTest(TestCase):
     def test_more_matches_first(self):
         self.assertEqual(
             [
-                {"origin": "Doiran", "url": "http://toto.com"},
-                {"origin": "Doiran", "url": "http://toto.com/2"},
+                remove_keywords(self.db_comics[0]),
+                remove_keywords(self.db_comics[1]),
             ],
             self.get_search_response({"keywords": ["foo", "bar"]}),
         )
+
+def remove_keywords(dictionnary):
+    return { k:v for k, v in dictionnary.items() if k != "keywords" }
