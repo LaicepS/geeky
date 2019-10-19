@@ -22,32 +22,21 @@ class End2EndTest(TestCase):
         self.assertEquals(get_request.status_code, 200)
         return json.loads(get_request.getvalue())
 
-    def test_basic_end2end(self):
-        self.assertEqual(
-            [remove_keywords(self.db_comics[0])],
-            self.get_search_response({"keywords": "foo"}),
-        )
-
     def test_missing_comic(self):
         self.assertEqual([], self.get_search_response({"keywords": "missing_keyword"}))
 
     def test_one_kw_match_many(self):
         self.assertEqual(
-            [
-                remove_keywords(self.db_comics[0]),
-                remove_keywords(self.db_comics[1]),
-            ],
+            [remove_keywords(self.db_comics[0]), remove_keywords(self.db_comics[1])],
             self.get_search_response({"keywords": "bar"}),
         )
 
     def test_more_matches_first(self):
         self.assertEqual(
-            [
-                remove_keywords(self.db_comics[0]),
-                remove_keywords(self.db_comics[1]),
-            ],
+            [remove_keywords(self.db_comics[0]), remove_keywords(self.db_comics[1])],
             self.get_search_response({"keywords": ["foo", "bar"]}),
         )
 
+
 def remove_keywords(dictionnary):
-    return { k:v for k, v in dictionnary.items() if k != "keywords" }
+    return {k: v for k, v in dictionnary.items() if k != "keywords"}
