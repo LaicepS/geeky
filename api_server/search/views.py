@@ -15,7 +15,7 @@ def index(request):
     for kw in request_params.getlist("keywords"):
         query = Comic.objects.filter(keywords__contains=kw)
         for comic in query:
-            if comic in comic_list.keys():
+            if comic in comic_list:
                 comic_list[comic] += 1
             else:
                 comic_list[comic] = 1
