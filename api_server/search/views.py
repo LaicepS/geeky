@@ -20,9 +20,8 @@ def index(request):
             else:
                 comic_list[comic] = 1
 
-    comic_list = dict(
-        sorted(comic_list.items(), key=operator.itemgetter(1), reverse=True)
-    )
+    comic_list = sorted(comic_list.items(), key=operator.itemgetter(1), reverse=True)
+    comic_list = (comic for comic, counter in comic_list)
     return HttpResponse(json.dumps([serialize_comic(comic) for comic in comic_list]))
 
 
