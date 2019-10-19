@@ -31,15 +31,6 @@ class End2EndTest(TestCase):
     def test_missing_comic(self):
         self.assertEqual([], self.get_search_response({"keywords": "missing_keyword"}))
 
-    def test_several_keywords(self):
-        self.assertEqual(
-            [
-                remove_keywords(self.db_comics[0]),
-                remove_keywords(self.db_comics[1]),
-            ],
-            self.get_search_response({"keywords": ["foo", "bar", "toto"]}),
-        )
-
     def test_one_kw_match_many(self):
         self.assertEqual(
             [
