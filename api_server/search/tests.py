@@ -6,7 +6,7 @@ from django.test import TestCase, Client
 
 class End2EndTest(TestCase):
     db_comics = [
-        {"url": "http://toto.com", "keywords": "foo bar joke", "origin": "Doiran"},
+        {"url": "http://toto.com/", "keywords": "foo bar joke", "origin": "Doiran"},
         {"url": "http://toto.com/2", "keywords": "bar joke", "origin": "Doiran"},
     ]
 
