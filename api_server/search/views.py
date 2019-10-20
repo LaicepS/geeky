@@ -1,10 +1,8 @@
-from functools import total_ordering
 import operator
+import json
 
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
-
-import json
 
 from search.models import Comic
 

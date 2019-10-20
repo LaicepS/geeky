@@ -1,6 +1,6 @@
+import datetime
 import json
 import pytz
-import datetime
 
 from search.models import Comic
 from django.test import TestCase, Client
