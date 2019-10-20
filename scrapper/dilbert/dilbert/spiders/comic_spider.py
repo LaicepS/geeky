@@ -4,13 +4,6 @@ import tempfile
 import urllib
 
 
-def cleanUp(url):
-    if url[0:2] == "//":
-        return "http:" + url
-    else:
-        return url
-
-
 class ComicsSpider(scrapy.Spider):
     name = "Comics Spider"
     start_urls = ["http://dilbert.com/strip/2018-11-04"]
@@ -45,3 +38,10 @@ class ComicsSpider(scrapy.Spider):
 
     def getFileName(self):
         return "dilbert-{}.gif".format(self.counter)
+
+
+def cleanUp(url):
+    if url[0:2] == "//":
+        return "http:" + url
+    else:
+        return url
