@@ -31,7 +31,7 @@ class End2EndTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         for c in cls.db_comics:
-            comic_date = default = (
+            comic_date = (
                 django.utils.timezone.now()
                 if c.get("date", None) is None
                 else c["date"]
