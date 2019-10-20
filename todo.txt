@@ -1,4 +1,5 @@
 TODO:
+# remove yellow warning message about dates in django
 # check if we should remove dependencies to django early?
 # tesseract errors should be transformed to our own errors
 # get the tesseract error messages back
