@@ -3,3 +3,4 @@
 *.png
 venv
 scrapper/tutorial
+api_server/search/migrations/*
