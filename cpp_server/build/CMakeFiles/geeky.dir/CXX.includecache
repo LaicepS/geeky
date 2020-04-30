@@ -1,0 +1,22 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/dorian/geeky/cpp_server/src/geeky.cpp
+boost/asio/io_service.hpp
+-
+boost/asio/ip/address.hpp
+-
+iostream
+-
+string
+-
+thread
+-
+boost/asio.hpp
+-
+

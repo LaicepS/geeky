@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/home/dorian/geeky/cpp_server/build",
+  "command": "clang++     -std=c++17 -pedantic -Werror      -Wall     -Wextra     -Wshadow     -Wnon-virtual-dtor     -Wold-style-cast     -Wcast-align     -Wunused     -Woverloaded-virtual     -Wpedantic -Wconversion     -Wsign-conversion     -Wdouble-promotion     -Wformat=2     -o CMakeFiles/geeky.dir/src/geeky.cpp.o -c /home/dorian/geeky/cpp_server/src/geeky.cpp",
+  "file": "/home/dorian/geeky/cpp_server/src/geeky.cpp"
+}
+]
