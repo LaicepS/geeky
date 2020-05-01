@@ -19,7 +19,7 @@ set(CPP_WARNINGS " \
     -Wformat=2 \
 ")
 
-set(CMAKE_CXX_FLAGS "-std=c++17 -pedantic -Werror ${CPP_WARNINGS} ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-std=c++17 -g -pedantic -Werror ${CPP_WARNINGS} ${CMAKE_CXX_FLAGS}")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 

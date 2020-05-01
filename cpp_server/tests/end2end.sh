@@ -1,4 +1,4 @@
 #!/bin/bash
 
-build/geeky
-telnet localhost 8888
+build/geeky &
+wget localhost:8888
