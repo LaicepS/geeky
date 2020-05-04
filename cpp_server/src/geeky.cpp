@@ -1,4 +1,5 @@
 #include <boost/asio/io_context.hpp>
+#include <boost/system/error_code.hpp>
 #include <iostream>
 #include <string>
 #include <thread>
@@ -95,6 +96,8 @@ using namespace boost::asio::ip;
 
 using namespace boost::asio::ip;
 
+void connection_handler(boost::system::error_code const &) {}
+
 struct http_server_t {
   http_server_t(string const &host, string const &port) : acceptor(io_context) {
     auto resolver = tcp::resolver(io_context);
@@ -107,9 +110,7 @@ struct http_server_t {
     acceptor.listen();
 
     tcp::socket socket(io_context);
-    acceptor.async_accept(socket, [](const boost::system::error_code &) {
-      cout << "hello!" << endl;
-    });
+    acceptor.async_accept(socket, &connection_handler);
     cout << "run!" << endl;
     io_context.run();
     cout << "fin run!" << endl;
@@ -123,22 +124,22 @@ struct http_server_t {
   tcp::acceptor acceptor;
 };
 
-auto connect(string const &host, unsigned short port) {
+auto connect(string const &, unsigned short port) {
   boost::asio::io_context io_context;
 
-  boost::asio::ip::tcp::endpoint endpoint(
-      boost::asio::ip::address::from_string(host), port);
+  boost::asio::ip::tcp::endpoint endpoint(tcp::v4(), port);
 
-  cout << "?: " << endpoint.protocol().family() << endl;
   tcp::socket socket(io_context);
   socket.connect(endpoint);
   socket.close();
 }
 
 void run_tests() {
-  http_server_t server("127.0.0.1", "8081");
-  connect("localhost", 8081);
-  server.stop();
+  auto const port = 8081;
+  auto const host = "localhost";
+  std::thread t([=]() { http_server_t server(host, to_string(port)); });
+  connect(host, port);
+  t.join();
 }
 
 int main() {

@@ -9,6 +9,8 @@
 /home/dorian/geeky/cpp_server/src/geeky.cpp
 boost/asio/io_context.hpp
 -
+boost/system/error_code.hpp
+-
 iostream
 -
 string
