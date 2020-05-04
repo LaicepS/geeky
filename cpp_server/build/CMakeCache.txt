@@ -14,29 +14,11 @@
 # EXTERNAL cache entries
 ########################
 
-//Boost asio library (debug)
-Boost_ASIO_LIBRARY_DEBUG:FILEPATH=Boost_ASIO_LIBRARY_DEBUG-NOTFOUND
-
-//Boost asio library (release)
-Boost_ASIO_LIBRARY_RELEASE:FILEPATH=Boost_ASIO_LIBRARY_RELEASE-NOTFOUND
-
 //The directory containing a CMake configuration file for Boost.
 Boost_DIR:PATH=Boost_DIR-NOTFOUND
 
 //Path to a file.
-Boost_INCLUDE_DIR:PATH=/usr/include
-
-//Boost library directory DEBUG
-Boost_LIBRARY_DIR_DEBUG:PATH=/usr/lib/x86_64-linux-gnu
-
-//Boost library directory RELEASE
-Boost_LIBRARY_DIR_RELEASE:PATH=/usr/lib/x86_64-linux-gnu
-
-//Boost system library (debug)
-Boost_SYSTEM_LIBRARY_DEBUG:FILEPATH=/usr/lib/x86_64-linux-gnu/libboost_system.so
-
-//Boost system library (release)
-Boost_SYSTEM_LIBRARY_RELEASE:FILEPATH=/usr/lib/x86_64-linux-gnu/libboost_system.so
+Boost_INCLUDE_DIR:PATH=/home/dorian/opt/boost/boost_1_73_0
 
 //Path to a program.
 CMAKE_AR:FILEPATH=/usr/bin/ar
@@ -195,30 +177,15 @@ geeky_BINARY_DIR:STATIC=/home/dorian/geeky/cpp_server/build
 //Value Computed by CMake
 geeky_SOURCE_DIR:STATIC=/home/dorian/geeky/cpp_server
 
-//The directory containing a CMake configuration file for pthread.
-pthread_DIR:PATH=pthread_DIR-NOTFOUND
-
 
 ########################
 # INTERNAL cache entries
 ########################
 
-//ADVANCED property for variable: Boost_ASIO_LIBRARY_DEBUG
-Boost_ASIO_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: Boost_ASIO_LIBRARY_RELEASE
-Boost_ASIO_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: Boost_DIR
 Boost_DIR-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: Boost_INCLUDE_DIR
 Boost_INCLUDE_DIR-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: Boost_LIBRARY_DIR_DEBUG
-Boost_LIBRARY_DIR_DEBUG-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: Boost_LIBRARY_DIR_RELEASE
-Boost_LIBRARY_DIR_RELEASE-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: Boost_SYSTEM_LIBRARY_DEBUG
-Boost_SYSTEM_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: Boost_SYSTEM_LIBRARY_RELEASE
-Boost_SYSTEM_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_AR
 CMAKE_AR-ADVANCED:INTERNAL=1
 //This is the directory where this CMakeCache.txt was created
@@ -346,14 +313,12 @@ CMAKE_STRIP-ADVANCED:INTERNAL=1
 CMAKE_UNAME:INTERNAL=/bin/uname
 //ADVANCED property for variable: CMAKE_VERBOSE_MAKEFILE
 CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
+//Last used BOOST_ROOT value.
+_BOOST_ROOT_LAST:INTERNAL=/home/dorian/opt/boost/boost_1_73_0
 //Components requested for this build tree.
-_Boost_COMPONENTS_SEARCHED:INTERNAL=asio;system
+_Boost_COMPONENTS_SEARCHED:INTERNAL=
 //Last used Boost_INCLUDE_DIR value.
-_Boost_INCLUDE_DIR_LAST:INTERNAL=/usr/include
-//Last used Boost_LIBRARY_DIR_DEBUG value.
-_Boost_LIBRARY_DIR_DEBUG_LAST:INTERNAL=/usr/lib/x86_64-linux-gnu
-//Last used Boost_LIBRARY_DIR_RELEASE value.
-_Boost_LIBRARY_DIR_RELEASE_LAST:INTERNAL=/usr/lib/x86_64-linux-gnu
+_Boost_INCLUDE_DIR_LAST:INTERNAL=/home/dorian/opt/boost/boost_1_73_0
 //Last used Boost_NAMESPACE value.
 _Boost_NAMESPACE_LAST:INTERNAL=boost
 //Last used Boost_USE_MULTITHREADED value.

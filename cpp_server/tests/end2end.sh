@@ -1,4 +1,7 @@
 #!/bin/bash
 
 build/geeky &
-wget localhost:8888
+pid=$?
+nc localhost 8081
+
+kill $pid

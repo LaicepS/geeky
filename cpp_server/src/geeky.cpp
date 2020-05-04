@@ -1,10 +1,12 @@
-#include <boost/asio/io_service.hpp>
-#include <boost/asio/ip/address.hpp>
+#include <boost/asio/io_context.hpp>
 #include <iostream>
 #include <string>
 #include <thread>
 
 #include <boost/asio.hpp>
+#include <boost/asio/io_service.hpp>
+#include <boost/asio/ip/address.hpp>
+#include <boost/beast.hpp>
 
 using namespace std;
 using namespace boost::asio::ip;
@@ -94,9 +96,9 @@ using namespace boost::asio::ip;
 using namespace boost::asio::ip;
 
 struct http_server_t {
-  http_server_t(string const &host, string const &port) : acceptor(io_service) {
-    auto resolver = tcp::resolver(io_service);
-    auto const query = tcp::resolver::query(host, port);
+  http_server_t(string const &host, string const &port) : acceptor(io_context) {
+    auto resolver = tcp::resolver(io_context);
+    auto const query = tcp::resolver::query(tcp::v4(), host, port);
     auto const endpoint = tcp::endpoint(*resolver.resolve(query));
 
     acceptor.open(endpoint.protocol());
@@ -104,33 +106,38 @@ struct http_server_t {
     acceptor.bind(endpoint);
     acceptor.listen();
 
-    tcp::socket socket(io_service);
-    acceptor.async_accept(socket, [](auto &) {});
-    auto server_thread = std::thread([=]() { io_service.run(); });
+    tcp::socket socket(io_context);
+    acceptor.async_accept(socket, [](const boost::system::error_code &) {
+      cout << "hello!" << endl;
+    });
+    cout << "run!" << endl;
+    io_context.run();
+    cout << "fin run!" << endl;
   }
 
-  void stop() { io_service.stop(); }
+  void stop() { io_context.stop(); }
 
   // boost::asio::http_server server;
-  boost::asio::io_service io_service;
+  boost::asio::io_context io_context;
   /// Acceptor used to listen for incoming connections.
   tcp::acceptor acceptor;
 };
 
 auto connect(string const &host, unsigned short port) {
-  boost::asio::io_service io_service;
+  boost::asio::io_context io_context;
 
   boost::asio::ip::tcp::endpoint endpoint(
       boost::asio::ip::address::from_string(host), port);
 
-  tcp::socket socket(io_service);
+  cout << "?: " << endpoint.protocol().family() << endl;
+  tcp::socket socket(io_context);
   socket.connect(endpoint);
   socket.close();
 }
 
 void run_tests() {
-  http_server_t server("localhost", "8080");
-  connect("localhost", 8080);
+  http_server_t server("127.0.0.1", "8081");
+  connect("localhost", 8081);
   server.stop();
 }
 
