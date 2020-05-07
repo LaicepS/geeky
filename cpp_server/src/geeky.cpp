@@ -162,7 +162,7 @@ struct http_server {
   conn_handler connection_handler_;
 };
 
-auto connect(string const &, unsigned short port) {
+auto connect(unsigned short port) {
   boost::asio::io_context io_context;
 
   boost::asio::ip::tcp::endpoint endpoint(tcp::v4(), port);
@@ -174,14 +174,15 @@ auto connect(string const &, unsigned short port) {
 
 void telnet_test() {
   auto const port = 8081;
-  auto const host = "localhost";
+
   std::thread t([=]() { http_server server(port); });
 
   std::this_thread::sleep_for(10ms);
-  connect(host, port);
+
+  connect(port);
 
   std::this_thread::sleep_for(10ms);
-  connect(host, port);
+  connect(port);
 
   std::this_thread::sleep_for(10ms);
 
