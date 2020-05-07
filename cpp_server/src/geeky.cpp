@@ -96,32 +96,70 @@ using namespace boost::asio::ip;
 
 using namespace boost::asio::ip;
 
-void connection_handler(boost::system::error_code const &) {}
+using namespace boost::asio;
 
-struct http_server_t {
-  http_server_t(string const &host, string const &port) : acceptor(io_context) {
-    auto resolver = tcp::resolver(io_context);
-    auto const query = tcp::resolver::query(tcp::v4(), host, port);
-    auto const endpoint = tcp::endpoint(*resolver.resolve(query));
+struct http_server;
 
+struct http_session {
+  http_session() {}
+};
+
+template <typename connection_broker> struct connection_handler {
+  connection_handler(connection_broker *my_broker) : my_broker_(my_broker) {}
+
+  void handle_connection(boost::system::error_code const &ec) {
+    cout << "handle_connection" << endl;
+    if (ec) {
+      cout << "error?" << endl;
+      cout << ec << endl;
+      return;
+    }
+
+    http_session();
+
+    my_broker_->use_handler(this);
+  }
+
+  connection_broker *my_broker_;
+};
+
+void handle_connection(tcp::socket &) { cout << "handle connection" << endl; }
+
+struct http_server {
+
+  using conn_handler = connection_handler<http_server>;
+
+  http_server(unsigned short port)
+      : io_context_{1}, socket_(io_context_), connection_handler_(this) {
+
+    auto const endpoint = tcp::endpoint(tcp::v4(), port);
+    auto connection_acceptor = setup_acceptor(endpoint);
+
+    while (true) {
+      auto socket = tcp::socket{io_context_};
+
+      connection_acceptor.accept(socket);
+
+      thread(bind(handle_connection, move(socket))).detach();
+    }
+  }
+
+  tcp::acceptor setup_acceptor(tcp::endpoint const &endpoint) {
+    tcp::acceptor acceptor{io_context_};
     acceptor.open(endpoint.protocol());
     acceptor.set_option(tcp::acceptor::reuse_address(true));
     acceptor.bind(endpoint);
     acceptor.listen();
 
-    tcp::socket socket(io_context);
-    acceptor.async_accept(socket, &connection_handler);
-    cout << "run!" << endl;
-    io_context.run();
-    cout << "fin run!" << endl;
+    return acceptor;
   }
 
-  void stop() { io_context.stop(); }
-
   // boost::asio::http_server server;
-  boost::asio::io_context io_context;
   /// Acceptor used to listen for incoming connections.
-  tcp::acceptor acceptor;
+
+  boost::asio::io_context io_context_;
+  tcp::socket socket_;
+  conn_handler connection_handler_;
 };
 
 auto connect(string const &, unsigned short port) {
@@ -134,13 +172,23 @@ auto connect(string const &, unsigned short port) {
   socket.close();
 }
 
-void run_tests() {
+void telnet_test() {
   auto const port = 8081;
   auto const host = "localhost";
-  std::thread t([=]() { http_server_t server(host, to_string(port)); });
+  std::thread t([=]() { http_server server(port); });
+
+  std::this_thread::sleep_for(10ms);
   connect(host, port);
-  t.join();
-}
+
+  std::this_thread::sleep_for(10ms);
+  connect(host, port);
+
+  std::this_thread::sleep_for(10ms);
+
+  t.detach();
+};
+
+void run_tests() { telnet_test(); }
 
 int main() {
   run_tests();
