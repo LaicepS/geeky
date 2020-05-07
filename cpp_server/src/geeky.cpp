@@ -1,4 +1,11 @@
 #include <boost/asio/io_context.hpp>
+#include <boost/beast/core/error.hpp>
+#include <boost/beast/core/flat_buffer.hpp>
+#include <boost/beast/http/dynamic_body.hpp>
+#include <boost/beast/http/message.hpp>
+#include <boost/beast/http/parser.hpp>
+#include <boost/beast/http/serializer.hpp>
+#include <boost/beast/http/string_body.hpp>
 #include <boost/system/error_code.hpp>
 #include <iostream>
 #include <string>
@@ -94,43 +101,36 @@ using namespace boost::asio::ip;
 //  request_handler request_handler_;
 //};
 
-using namespace boost::asio::ip;
+#include <utility>
+using namespace boost;
 
 using namespace boost::asio;
+using namespace boost::asio::ip;
 
-struct http_server;
+using namespace boost::beast;
 
-struct http_session {
-  http_session() {}
-};
+void http_session(tcp::socket &socket) {
+  boost::system::error_code ec;
+  auto buffer = beast::flat_buffer{};
 
-template <typename connection_broker> struct connection_handler {
-  connection_handler(connection_broker *my_broker) : my_broker_(my_broker) {}
-
-  void handle_connection(boost::system::error_code const &ec) {
-    cout << "handle_connection" << endl;
-    if (ec) {
-      cout << "error?" << endl;
-      cout << ec << endl;
+  while (true) {
+    auto http_request = http::request<http::string_body>{};
+    http::read(socket, buffer, http_request, ec);
+    if (ec == http::error::end_of_stream)
       return;
-    }
 
-    http_session();
-
-    my_broker_->use_handler(this);
+    // Respond to GET request
+    http::response<http::string_body> a;
+    http::write(socket, a, ec);
+    break;
   }
 
-  connection_broker *my_broker_;
-};
-
-void handle_connection(tcp::socket &) { cout << "handle connection" << endl; }
+  socket.shutdown(tcp::socket::shutdown_send);
+}
 
 struct http_server {
 
-  using conn_handler = connection_handler<http_server>;
-
-  http_server(unsigned short port)
-      : io_context_{1}, socket_(io_context_), connection_handler_(this) {
+  http_server(unsigned short port) : io_context_{1}, socket_(io_context_) {
 
     auto const endpoint = tcp::endpoint(tcp::v4(), port);
     auto connection_acceptor = setup_acceptor(endpoint);
@@ -140,7 +140,7 @@ struct http_server {
 
       connection_acceptor.accept(socket);
 
-      thread(bind(handle_connection, move(socket))).detach();
+      thread(bind(http_session, std::move(socket))).detach();
     }
   }
 
@@ -159,17 +159,22 @@ struct http_server {
 
   boost::asio::io_context io_context_;
   tcp::socket socket_;
-  conn_handler connection_handler_;
 };
 
 auto connect(unsigned short port) {
-  boost::asio::io_context io_context;
+  auto ioc = io_context();
 
-  boost::asio::ip::tcp::endpoint endpoint(tcp::v4(), port);
+  auto stream = beast::tcp_stream{ioc};
+  stream.connect(tcp::endpoint(tcp::v4(), port));
 
-  tcp::socket socket(io_context);
-  socket.connect(endpoint);
-  socket.close();
+  auto const req = http::request<http::string_body>{http::verb::get, "/", 10};
+
+  http::write(stream, req);
+
+  auto read_buffer = beast::flat_buffer{};
+  auto response = http::response<http::dynamic_body>{};
+  http::response<http::dynamic_body> res;
+  http::read(stream, read_buffer, res);
 }
 
 void telnet_test() {

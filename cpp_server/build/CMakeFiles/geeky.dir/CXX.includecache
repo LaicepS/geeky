@@ -9,6 +9,20 @@
 /home/dorian/geeky/cpp_server/src/geeky.cpp
 boost/asio/io_context.hpp
 -
+boost/beast/core/error.hpp
+-
+boost/beast/core/flat_buffer.hpp
+-
+boost/beast/http/dynamic_body.hpp
+-
+boost/beast/http/message.hpp
+-
+boost/beast/http/parser.hpp
+-
+boost/beast/http/serializer.hpp
+-
+boost/beast/http/string_body.hpp
+-
 boost/system/error_code.hpp
 -
 iostream
@@ -24,5 +38,7 @@ boost/asio/io_service.hpp
 boost/asio/ip/address.hpp
 -
 boost/beast.hpp
+-
+utility
 -
 
