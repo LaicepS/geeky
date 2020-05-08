@@ -79,13 +79,15 @@ struct http_server {
   port port_;
 };
 
-auto connect(unsigned short port) {
+auto http_get(unsigned short port) {
   auto ioc = io_context();
 
   auto stream = beast::tcp_stream{ioc};
   stream.connect(tcp::endpoint(tcp::v4(), port));
 
-  auto const req = http::request<http::string_body>{http::verb::get, "/", 10};
+  auto const version = 10;
+  auto const req =
+      http::request<http::string_body>{http::verb::get, "/", version};
 
   http::write(stream, req);
 
@@ -102,10 +104,10 @@ void http_test() {
 
   this_thread::sleep_for(10ms);
 
-  connect(port);
+  http_get(port);
 
   this_thread::sleep_for(10ms);
-  connect(port);
+  http_get(port);
 
   this_thread::sleep_for(10ms);
 
