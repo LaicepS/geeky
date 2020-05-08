@@ -49,9 +49,11 @@ using port = unsigned short;
 
 struct http_server {
 
-  http_server(port port) : io_context_{1}, socket_(io_context_) {
+  http_server(port port) : io_context_{1}, socket_(io_context_), port_{port} {
+  }
 
-    auto connection_acceptor = setup_acceptor(port);
+  void run() {
+    auto connection_acceptor = setup_acceptor();
 
     while (true) {
       auto socket = tcp::socket{io_context_};
@@ -62,10 +64,10 @@ struct http_server {
     }
   }
 
-  tcp::acceptor setup_acceptor(port port) {
-    auto const endpoint = tcp::endpoint(tcp::v4(), port);
+  tcp::acceptor setup_acceptor() {
+    auto const endpoint = tcp::endpoint(tcp::v4(), port_);
 
-    tcp::acceptor acceptor{io_context_};
+    auto acceptor = tcp::acceptor{io_context_};
     acceptor.open(endpoint.protocol());
     acceptor.set_option(tcp::acceptor::reuse_address(true));
     acceptor.bind(endpoint);
@@ -76,6 +78,7 @@ struct http_server {
 
   boost::asio::io_context io_context_;
   tcp::socket socket_;
+  port port_;
 };
 
 auto connect(unsigned short port) {
@@ -97,16 +100,16 @@ auto connect(unsigned short port) {
 void http_test() {
   auto const port = 8081;
 
-  std::thread t([=]() { http_server server(port); });
+  thread t([=]() { http_server(port).run(); });
 
-  std::this_thread::sleep_for(10ms);
+  this_thread::sleep_for(10ms);
 
   connect(port);
 
-  std::this_thread::sleep_for(10ms);
+  this_thread::sleep_for(10ms);
   connect(port);
 
-  std::this_thread::sleep_for(10ms);
+  this_thread::sleep_for(10ms);
 
   t.detach();
 };
