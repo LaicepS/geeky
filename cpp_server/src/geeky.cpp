@@ -154,9 +154,6 @@ struct http_server {
     return acceptor;
   }
 
-  // boost::asio::http_server server;
-  /// Acceptor used to listen for incoming connections.
-
   boost::asio::io_context io_context_;
   tcp::socket socket_;
 };
@@ -177,7 +174,7 @@ auto connect(unsigned short port) {
   http::read(stream, read_buffer, res);
 }
 
-void telnet_test() {
+void http_test() {
   auto const port = 8081;
 
   std::thread t([=]() { http_server server(port); });
@@ -194,7 +191,7 @@ void telnet_test() {
   t.detach();
 };
 
-void run_tests() { telnet_test(); }
+void run_tests() { http_test(); }
 
 int main() {
   run_tests();
