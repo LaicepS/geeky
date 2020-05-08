@@ -30,17 +30,15 @@ void http_session(tcp::socket &socket) {
   boost::system::error_code ec;
   auto buffer = beast::flat_buffer{};
 
-  while (true) {
-    auto http_request = http::request<http::string_body>{};
-    http::read(socket, buffer, http_request, ec);
-    if (ec == http::error::end_of_stream)
-      return;
+  auto http_request = http::request<http::string_body>{};
 
-    // Respond to GET request
-    http::response<http::string_body> a;
-    http::write(socket, a, ec);
-    break;
-  }
+  http::read(socket, buffer, http_request, ec);
+  if (ec == http::error::end_of_stream)
+    return;
+
+  // Respond to GET request
+  http::response<http::string_body> a;
+  http::write(socket, a, ec);
 
   socket.shutdown(tcp::socket::shutdown_send);
 }
