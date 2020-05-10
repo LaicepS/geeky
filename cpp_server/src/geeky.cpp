@@ -286,6 +286,25 @@ struct session : std::enable_shared_from_this<session> {
     handle_request(std::move(req_), lambda_);
   }
 
+  template <bool isRequest, class Body, class Fields>
+  void message_writer(http::message<isRequest, Body, Fields>&& msg) {
+    // The lifetime of the message has to extend
+    // for the duration of the async operation so
+    // we use a shared_ptr to manage it.
+    auto sp = std::make_shared<http::message<isRequest, Body, Fields>>(
+        std::move(msg));
+
+    // Store a type-erased version of the shared
+    // pointer in the class to keep it alive.
+    // self_.res_ = sp;
+
+    // Write the response
+    http::async_write(
+        stream_, *sp,
+        beast::bind_front_handler(&session::on_write, shared_from_this(),
+                                  sp->need_eof()));
+  }
+
   void on_write(bool close,
                 beast::error_code ec,
                 std::size_t bytes_transferred) {
