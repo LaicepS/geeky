@@ -11,10 +11,10 @@
 #include <string>
 #include <thread>
 
-namespace beast = boost::beast;   // from <boost/beast.hpp>
-namespace http = beast::http;     // from <boost/beast/http.hpp>
-namespace net = boost::asio;      // from <boost/asio.hpp>
-using tcp = boost::asio::ip::tcp; // from <boost/asio/ip/tcp.hpp>
+namespace beast = boost::beast;    // from <boost/beast.hpp>
+namespace http = beast::http;      // from <boost/beast/http.hpp>
+namespace net = boost::asio;       // from <boost/asio.hpp>
+using tcp = boost::asio::ip::tcp;  // from <boost/asio/ip/tcp.hpp>
 
 using namespace std;
 
@@ -40,10 +40,10 @@ using port = unsigned short;
 #include <thread>
 #include <vector>
 
-namespace beast = boost::beast;   // from <boost/beast.hpp>
-namespace http = beast::http;     // from <boost/beast/http.hpp>
-namespace net = boost::asio;      // from <boost/asio.hpp>
-using tcp = boost::asio::ip::tcp; // from <boost/asio/ip/tcp.hpp>
+namespace beast = boost::beast;    // from <boost/beast.hpp>
+namespace http = beast::http;      // from <boost/beast/http.hpp>
+namespace net = boost::asio;       // from <boost/asio.hpp>
+using tcp = boost::asio::ip::tcp;  // from <boost/asio/ip/tcp.hpp>
 
 // Return a reasonable mime type based on the extension of a file.
 beast::string_view mime_type(beast::string_view path) {
@@ -110,7 +110,7 @@ std::string path_cat(beast::string_view base, beast::string_view path) {
   if (result.back() == path_separator)
     result.resize(result.size() - 1);
   result.append(path.data(), path.size());
-  for (auto &c : result)
+  for (auto& c : result)
     if (c == '/')
       c = path_separator;
 #else
@@ -127,8 +127,8 @@ std::string path_cat(beast::string_view base, beast::string_view path) {
 // contents of the request, so the interface requires the
 // caller to pass a generic lambda for receiving the response.
 template <class Body, class Allocator, class Send>
-void handle_request(http::request<Body, http::basic_fields<Allocator>> &&req,
-                    Send &&send) {
+void handle_request(http::request<Body, http::basic_fields<Allocator>>&& req,
+                    Send&& send) {
   // Returns a bad request response
   auto const bad_request = [&req](beast::string_view why) {
     http::response<http::string_body> res{http::status::bad_request,
@@ -216,24 +216,21 @@ void handle_request(http::request<Body, http::basic_fields<Allocator>> &&req,
   return send(std::move(res));
 }
 
-//------------------------------------------------------------------------------
-
 // Report a failure
-void fail(beast::error_code ec, char const *what) {
+void fail(beast::error_code ec, char const* what) {
   std::cerr << what << ": " << ec.message() << "\n";
 }
 
-// Handles an HTTP server connection
-class session : public std::enable_shared_from_this<session> {
+struct session : std::enable_shared_from_this<session> {
   // This is the C++11 equivalent of a generic lambda.
   // The function object is used to send an HTTP message.
   struct send_lambda {
-    session &self_;
+    session& self_;
 
-    explicit send_lambda(session &self) : self_(self) {}
+    explicit send_lambda(session& self) : self_(self) {}
 
     template <bool isRequest, class Body, class Fields>
-    void operator()(http::message<isRequest, Body, Fields> &&msg) const {
+    void operator()(http::message<isRequest, Body, Fields>&& msg) const {
       // The lifetime of the message has to extend
       // for the duration of the async operation so
       // we use a shared_ptr to manage it.
@@ -245,10 +242,10 @@ class session : public std::enable_shared_from_this<session> {
       self_.res_ = sp;
 
       // Write the response
-      http::async_write(self_.stream_, *sp,
-                        beast::bind_front_handler(&session::on_write,
-                                                  self_.shared_from_this(),
-                                                  sp->need_eof()));
+      http::async_write(
+          self_.stream_, *sp,
+          beast::bind_front_handler(&session::on_write,
+                                    self_.shared_from_this(), sp->need_eof()));
     }
   };
 
@@ -258,9 +255,7 @@ class session : public std::enable_shared_from_this<session> {
   std::shared_ptr<void> res_;
   send_lambda lambda_;
 
-public:
-  // Take ownership of the stream
-  session(tcp::socket &&socket) : stream_(std::move(socket)), lambda_(*this) {}
+  session(tcp::socket&& socket) : stream_(std::move(socket)), lambda_(*this) {}
 
   // Start the asynchronous operation
   void run() {
@@ -301,7 +296,8 @@ public:
     handle_request(std::move(req_), lambda_);
   }
 
-  void on_write(bool close, beast::error_code ec,
+  void on_write(bool close,
+                beast::error_code ec,
                 std::size_t bytes_transferred) {
     boost::ignore_unused(bytes_transferred);
 
@@ -314,10 +310,8 @@ public:
       return do_close();
     }
 
-    // We're done with the response so delete it
     res_ = nullptr;
 
-    // Read another request
     do_read();
   }
 
@@ -332,15 +326,14 @@ public:
 
 namespace gky {
 
-void throw_error(const boost::system::error_code &ec, const string &error) {
+void throw_error(const boost::system::error_code& ec, const string& error) {
   boost::asio::detail::throw_error(ec, error.c_str());
 }
 
-} // namespace gky
+}  // namespace gky
 
 struct listener : std::enable_shared_from_this<listener> {
-
-  listener(net::io_context &ioc, tcp::endpoint endpoint)
+  listener(net::io_context& ioc, tcp::endpoint endpoint)
       : ioc_(ioc), acceptor_(net::make_strand(ioc)) {
     setup_acceptor(endpoint);
   }
@@ -380,7 +373,7 @@ struct listener : std::enable_shared_from_this<listener> {
     do_accept();
   }
 
-  net::io_context &ioc_;
+  net::io_context& ioc_;
   tcp::acceptor acceptor_;
 };
 
@@ -404,7 +397,6 @@ auto http_get(unsigned short port) {
 
 auto server_guard(port port) {
   struct server_guard {
-
     server_guard(::port port) {
       auto const endpoint = tcp::endpoint(tcp::v4(), port);
       server_ = std::make_shared<listener>(ioc_, endpoint);
@@ -455,7 +447,9 @@ void http_tests() {
   test_unsupported_verb();
 };
 
-void run_tests() { http_tests(); }
+void run_tests() {
+  http_tests();
+}
 
 void check_args(int argc) {
   if (argc != 3) {
@@ -466,7 +460,7 @@ void check_args(int argc) {
   exit(0);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   run_tests();
 
   check_args(argc);
@@ -485,4 +479,3 @@ int main(int argc, char *argv[]) {
 
   return 0;
 }
-
