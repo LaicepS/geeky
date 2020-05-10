@@ -249,12 +249,6 @@ struct session : std::enable_shared_from_this<session> {
     }
   };
 
-  beast::tcp_stream stream_;
-  beast::flat_buffer buffer_;
-  http::request<http::string_body> req_;
-  std::shared_ptr<void> res_;
-  send_lambda lambda_;
-
   session(tcp::socket&& socket) : stream_(std::move(socket)), lambda_(*this) {}
 
   // Start the asynchronous operation
@@ -273,10 +267,8 @@ struct session : std::enable_shared_from_this<session> {
     // otherwise the operation behavior is undefined.
     req_ = {};
 
-    // Set the timeout.
-    stream_.expires_after(std::chrono::seconds(30));
+    stream_.expires_after(30s);
 
-    // Read a request
     http::async_read(
         stream_, buffer_, req_,
         beast::bind_front_handler(&session::on_read, shared_from_this()));
@@ -285,14 +277,12 @@ struct session : std::enable_shared_from_this<session> {
   void on_read(beast::error_code ec, std::size_t bytes_transferred) {
     boost::ignore_unused(bytes_transferred);
 
-    // This means they closed the connection
     if (ec == http::error::end_of_stream)
       return do_close();
 
     if (ec)
       return fail(ec, "read");
 
-    // Send the response
     handle_request(std::move(req_), lambda_);
   }
 
@@ -316,12 +306,17 @@ struct session : std::enable_shared_from_this<session> {
   }
 
   void do_close() {
-    // Send a TCP shutdown
     beast::error_code ec;
     stream_.socket().shutdown(tcp::socket::shutdown_send, ec);
 
     // At this point the connection is closed gracefully
   }
+
+  beast::tcp_stream stream_;
+  beast::flat_buffer buffer_;
+  http::request<http::string_body> req_;
+  std::shared_ptr<void> res_;
+  send_lambda lambda_;
 };
 
 namespace gky {
