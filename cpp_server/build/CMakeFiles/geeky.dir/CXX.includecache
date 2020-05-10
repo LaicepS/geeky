@@ -19,6 +19,8 @@ boost/beast/version.hpp
 -
 boost/config.hpp
 -
+boost/system/error_code.hpp
+-
 cstdlib
 -
 iostream

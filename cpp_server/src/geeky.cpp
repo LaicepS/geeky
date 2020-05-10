@@ -4,6 +4,7 @@
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
 #include <boost/config.hpp>
+#include <boost/system/error_code.hpp>
 #include <cstdlib>
 #include <iostream>
 #include <memory>
@@ -329,6 +330,14 @@ public:
   }
 };
 
+namespace gky {
+
+void throw_error(const boost::system::error_code &ec, const string &error) {
+  boost::asio::detail::throw_error(ec, error.c_str());
+}
+
+} // namespace gky
+
 struct listener : std::enable_shared_from_this<listener> {
 
   listener(net::io_context &ioc, tcp::endpoint endpoint)
@@ -340,16 +349,16 @@ struct listener : std::enable_shared_from_this<listener> {
     beast::error_code ec;
 
     acceptor_.open(endpoint.protocol(), ec);
-    asio::detail::throw_error(ec, "open");
+    gky::throw_error(ec, "open");
 
     acceptor_.set_option(net::socket_base::reuse_address(true), ec);
-    asio::detail::throw_error(ec, "set_option");
+    gky::throw_error(ec, "set_option");
 
     acceptor_.bind(endpoint, ec);
-    asio::detail::throw_error(ec, "bind");
+    gky::throw_error(ec, "bind");
 
     acceptor_.listen(net::socket_base::max_listen_connections, ec);
-    asio::detail::throw_error(ec, "listen");
+    gky::throw_error(ec, "listen");
   }
 
   void run() { do_accept(); }
@@ -363,11 +372,10 @@ struct listener : std::enable_shared_from_this<listener> {
   }
 
   void on_accept(beast::error_code ec, tcp::socket socket) {
-    if (ec) {
+    if (ec)
       fail(ec, "accept");
-    } else {
+    else
       std::make_shared<session>(std::move(socket))->run();
-    }
 
     do_accept();
   }
