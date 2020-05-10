@@ -1,3 +1,4 @@
+#include <boost/asio/detail/throw_error.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
@@ -339,28 +340,16 @@ struct listener : std::enable_shared_from_this<listener> {
     beast::error_code ec;
 
     acceptor_.open(endpoint.protocol(), ec);
-    if (ec) {
-      fail(ec, "open");
-      return;
-    }
+    asio::detail::throw_error(ec, "open");
 
     acceptor_.set_option(net::socket_base::reuse_address(true), ec);
-    if (ec) {
-      fail(ec, "set_option");
-      return;
-    }
+    asio::detail::throw_error(ec, "set_option");
 
     acceptor_.bind(endpoint, ec);
-    if (ec) {
-      fail(ec, "bind");
-      return;
-    }
+    asio::detail::throw_error(ec, "bind");
 
     acceptor_.listen(net::socket_base::max_listen_connections, ec);
-    if (ec) {
-      fail(ec, "listen");
-      return;
-    }
+    asio::detail::throw_error(ec, "listen");
   }
 
   void run() { do_accept(); }
@@ -466,16 +455,16 @@ void check_args(int argc) {
               << "Example:\n"
               << "    http-server-async 8080 1\n";
   }
-    exit(1);
-  }
+  exit(0);
+}
 
 int main(int argc, char *argv[]) {
   run_tests();
 
   check_args(argc);
 
-  auto const port = static_cast<::port>(std::atoi(argv[2]));
-  auto const threads = std::max<int>(1, std::atoi(argv[4]));
+  auto const port = static_cast<::port>(std::atoi(argv[1]));
+  auto const threads = std::max<int>(1, std::atoi(argv[2]));
 
   net::io_context ioc{threads};
 

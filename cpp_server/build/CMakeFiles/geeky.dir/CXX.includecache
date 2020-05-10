@@ -7,6 +7,8 @@
 #IncludeRegexTransform: 
 
 /home/dorian/geeky/cpp_server/src/geeky.cpp
+boost/asio/detail/throw_error.hpp
+-
 boost/asio/ip/tcp.hpp
 -
 boost/beast/core.hpp
