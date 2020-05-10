@@ -27,7 +27,7 @@ set(GEEKY_SRC "src/geeky.cpp")
 set(BOOST_ROOT "/home/dorian/opt/boost/boost_1_73_0")
 find_package(Boost 1.73 REQUIRED)
 
-set(CMAKE_CXX_FLAGS "-std=c++17 -g -pedantic -Werror -isystem ${Boost_INCLUDE_DIRS} ${CPP_WARNINGS} ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-std=c++17 -stdlib=libc++ -g -pedantic -Werror -isystem ${Boost_INCLUDE_DIRS} ${CPP_WARNINGS} ${CMAKE_CXX_FLAGS}")
 
 add_executable(geeky ${GEEKY_SRC})
 
