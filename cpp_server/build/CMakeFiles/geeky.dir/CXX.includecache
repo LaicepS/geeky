@@ -9,6 +9,10 @@
 /home/dorian/geeky/cpp_server/src/geeky.cpp
 algorithm
 -
+boost/beast/http/status.hpp
+-
+boost/core/ignore_unused.hpp
+-
 cstdlib
 -
 functional

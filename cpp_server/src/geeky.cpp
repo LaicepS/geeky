@@ -1,4 +1,6 @@
 #include <algorithm>
+#include <boost/beast/http/status.hpp>
+#include <boost/core/ignore_unused.hpp>
 #include <cstdlib>
 #include <functional>
 #include <iostream>
@@ -48,6 +50,7 @@ void handle_request(http::request<Body, http::basic_fields<Allocator>>&& req,
     res.set(http::field::content_type, "text/html");
     res.keep_alive(req.keep_alive());
     res.body() = std::string(why);
+    res.content_length(why.length());
     res.prepare_payload();
     return res;
   };
@@ -65,7 +68,6 @@ void handle_request(http::request<Body, http::basic_fields<Allocator>>&& req,
   http::response<http::string_body> res;
   res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
   res.set(http::field::content_type, "text/html");
-  res.content_length(0);
   res.keep_alive(req.keep_alive());
   return send(std::move(res));
 }
@@ -245,7 +247,7 @@ struct listener : std::enable_shared_from_this<listener> {
   tcp::acceptor acceptor_;
 };
 
-auto http_get(unsigned short port) {
+auto http_get(port port) {
   auto ioc = io_context();
 
   auto stream = beast::tcp_stream{ioc};
@@ -259,8 +261,22 @@ auto http_get(unsigned short port) {
 
   auto read_buffer = beast::flat_buffer{};
   auto response = http::response<http::dynamic_body>{};
-  http::response<http::dynamic_body> res;
-  http::read(stream, read_buffer, res);
+  http::read(stream, read_buffer, response);
+
+  assert(http::to_status_class(response.result()) ==
+         http::status_class::successful);
+
+  // Gracefully close the socket
+  beast::error_code ec;
+  stream.socket().shutdown(tcp::socket::shutdown_both, ec);
+
+  // not_connected happens sometimes
+  // so don't bother reporting it.
+  //
+  if (ec && ec != beast::errc::not_connected)
+    throw beast::system_error{ec};
+
+  // If we get here then the connection is closed gracefully
 }
 
 auto server_guard(port port) {
@@ -301,13 +317,21 @@ void test_unsupported_verb() {
   auto server_guard = ::server_guard(port);
 
   io_context ioc{1};
-  auto const endpoint = tcp::endpoint(tcp::v4(), port);
   auto stream = beast::tcp_stream{ioc};
-  stream.connect(endpoint);
+  stream.connect(tcp::endpoint(tcp::v4(), port));
 
-  auto request = http::request<http::string_body>{};
-  request.method_string("unsupported_verb");
+  auto const version = 10;
+  auto const request =
+      http::request<http::string_body>{http::verb::mkcalendar, "/", version};
+
   http::write(stream, request);
+
+  auto read_buffer = beast::flat_buffer{};
+  auto response = http::response<http::dynamic_body>{};
+  http::read(stream, read_buffer, response);
+
+  assert(http::to_status_class(response.result()) !=
+         http::status_class::successful);
 }
 
 void http_tests() {
