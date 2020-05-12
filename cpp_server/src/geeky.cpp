@@ -46,11 +46,9 @@ void handle_request(http::request<Body, http::basic_fields<Allocator>>&& req,
   auto const bad_request = [&req](beast::string_view why) {
     http::response<http::string_body> res{http::status::bad_request,
                                           req.version()};
-    res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
     res.set(http::field::content_type, "text/html");
     res.keep_alive(req.keep_alive());
     res.body() = std::string(why);
-    res.content_length(why.length());
     res.prepare_payload();
     return res;
   };
@@ -332,6 +330,8 @@ void test_unsupported_verb() {
 
   assert(http::to_status_class(response.result()) !=
          http::status_class::successful);
+
+  cout << response << endl;
 }
 
 void http_tests() {
