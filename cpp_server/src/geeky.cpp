@@ -245,7 +245,7 @@ struct listener : std::enable_shared_from_this<listener> {
   tcp::acceptor acceptor_;
 };
 
-auto http_get(port port) {
+auto http_get(port port, const string& path) {
   auto ioc = io_context();
 
   auto stream = beast::tcp_stream{ioc};
@@ -253,16 +253,13 @@ auto http_get(port port) {
 
   auto const version = 10;
   auto const req =
-      http::request<http::string_body>{http::verb::get, "/", version};
+      http::request<http::string_body>{http::verb::get, path, version};
 
   http::write(stream, req);
 
   auto read_buffer = beast::flat_buffer{};
   auto response = http::response<http::dynamic_body>{};
   http::read(stream, read_buffer, response);
-
-  assert(http::to_status_class(response.result()) ==
-         http::status_class::successful);
 
   // Gracefully close the socket
   beast::error_code ec;
@@ -275,6 +272,7 @@ auto http_get(port port) {
     throw beast::system_error{ec};
 
   // If we get here then the connection is closed gracefully
+  return make_tuple(response, read_buffer);
 }
 
 auto server_guard(port port) {
@@ -305,9 +303,13 @@ auto server_guard(port port) {
 void test_multiple_gets() {
   auto const port = 8081;
   auto server_guard = ::server_guard(port);
+  auto const path = "/";
 
-  http_get(port);
-  http_get(port);
+  for (int i = 0; i < 2; i++) {
+    auto [response, _] = http_get(port, path);
+    assert(http::to_status_class(response.result()) ==
+           http::status_class::successful);
+  }
 }
 
 void test_unsupported_verb() {
