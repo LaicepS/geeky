@@ -15,6 +15,7 @@
 #include <boost/beast/http.hpp>
 #include <boost/beast/http/status.hpp>
 #include <boost/beast/http/string_body.hpp>
+#include <boost/beast/http/verb.hpp>
 #include <boost/beast/version.hpp>
 #include <boost/config.hpp>
 #include <boost/core/ignore_unused.hpp>
@@ -245,15 +246,14 @@ struct listener : std::enable_shared_from_this<listener> {
   tcp::acceptor acceptor_;
 };
 
-auto http_get(port port, const string& path) {
+auto http_request(http::verb method, ::port port, string const& path) {
   auto ioc = io_context();
 
   auto stream = beast::tcp_stream{ioc};
   stream.connect(tcp::endpoint(tcp::v4(), port));
 
   auto const version = 10;
-  auto const req =
-      http::request<http::string_body>{http::verb::get, path, version};
+  auto const req = http::request<http::string_body>{method, path, version};
 
   http::write(stream, req);
 
@@ -273,6 +273,10 @@ auto http_get(port port, const string& path) {
 
   // If we get here then the connection is closed gracefully
   return make_tuple(response, read_buffer);
+}
+
+auto http_get(port port, const string& path) {
+  return http_request(http::verb::get, port, path);
 }
 
 auto server_guard(port port) {
@@ -302,11 +306,10 @@ auto server_guard(port port) {
 
 void test_multiple_gets() {
   auto const port = 8081;
-  auto server_guard = ::server_guard(port);
-  auto const path = "/";
+  auto const server_guard = ::server_guard(port);
 
   for (int i = 0; i < 2; i++) {
-    auto [response, _] = http_get(port, path);
+    auto const [response, _] = http_get(port, "/");
     assert(http::to_status_class(response.result()) ==
            http::status_class::successful);
   }
@@ -315,23 +318,9 @@ void test_multiple_gets() {
 void test_unsupported_verb() {
   auto const port = 8081;
   auto server_guard = ::server_guard(port);
-
-  io_context ioc{1};
-  auto stream = beast::tcp_stream{ioc};
-  stream.connect(tcp::endpoint(tcp::v4(), port));
-
-  auto const version = 10;
-  auto const request =
-      http::request<http::string_body>{http::verb::mkcalendar, "/", version};
-
-  http::write(stream, request);
-
-  auto read_buffer = beast::flat_buffer{};
-  auto response = http::response<http::dynamic_body>{};
-  http::read(stream, read_buffer, response);
-
-  assert(http::to_status_class(response.result()) !=
-         http::status_class::successful);
+  auto const [response, _] = http_request(http::verb::mkcalendar, port, "/");
+  assert(http::to_status_class(response.result()) ==
+         http::status_class::client_error);
 }
 
 void http_tests() {
