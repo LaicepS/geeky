@@ -1,1 +1,0 @@
-clang++   -std=c++17 -g -pedantic -Werror -isystem /home/dorian/opt/boost/boost_1_73_0      -Wall     -Wextra     -Wshadow     -Wnon-virtual-dtor     -Wold-style-cast     -Wcast-align     -Wunused     -Woverloaded-virtual     -Wpedantic -Wconversion     -Wsign-conversion     -Wdouble-promotion     -Wformat=2     CMakeFiles/geeky.dir/src/geeky.cpp.o  -o geeky -rdynamic -lpthread 

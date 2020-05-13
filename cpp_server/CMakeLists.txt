@@ -23,12 +23,9 @@ set(CPP_WARNINGS " \
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(GEEKY_SRC "src/geeky.cpp")
+set(EXTERNAL_INCLUDE "${CMAKE_CURRENT_LIST_DIR}/third_party/src/include")
 
-set(BOOST_ROOT "/home/dorian/opt/boost/boost_1_73_0")
-find_package(Boost 1.73 REQUIRED)
-
-set(CMAKE_CXX_FLAGS "-std=c++17 -g -pedantic -Werror -isystem ${Boost_INCLUDE_DIRS} ${CPP_WARNINGS} ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-std=c++17 -g -pedantic -Werror -isystem ${EXTERNAL_INCLUDE} -I${EXTERNAL_INCLUDE} ${CPP_WARNINGS} ${CMAKE_CXX_FLAGS}")
 
 add_executable(geeky ${GEEKY_SRC})
-
-target_link_libraries(geeky LINK_PUBLIC ${Boost_LIBRARIES} pthread)
+target_link_libraries(geeky LINK_PUBLIC pthread)

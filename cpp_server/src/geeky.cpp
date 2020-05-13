@@ -1,6 +1,4 @@
 #include <algorithm>
-#include <boost/beast/http/status.hpp>
-#include <boost/core/ignore_unused.hpp>
 #include <cstdlib>
 #include <functional>
 #include <iostream>
@@ -15,9 +13,11 @@
 #include <boost/asio/strand.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
+#include <boost/beast/http/status.hpp>
 #include <boost/beast/http/string_body.hpp>
 #include <boost/beast/version.hpp>
 #include <boost/config.hpp>
+#include <boost/core/ignore_unused.hpp>
 #include <boost/system/error_code.hpp>
 
 using namespace std;
@@ -330,8 +330,6 @@ void test_unsupported_verb() {
 
   assert(http::to_status_class(response.result()) !=
          http::status_class::successful);
-
-  cout << response << endl;
 }
 
 void http_tests() {
