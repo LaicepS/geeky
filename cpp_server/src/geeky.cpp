@@ -21,14 +21,16 @@
 #include <boost/core/ignore_unused.hpp>
 #include <boost/system/error_code.hpp>
 
+#include "http_helpers.h"
+
 using namespace std;
+using namespace gky;
 
 using namespace boost;
 using namespace boost::asio;
 using namespace boost::asio::ip;
 
 using namespace boost::beast;
-using port = unsigned short;
 
 namespace beast = boost::beast;    // from <boost/beast.hpp>
 namespace http = beast::http;      // from <boost/beast/http.hpp>
@@ -246,39 +248,6 @@ struct listener : std::enable_shared_from_this<listener> {
   tcp::acceptor acceptor_;
 };
 
-auto http_request(http::verb method, ::port port, string const& path) {
-  auto ioc = io_context();
-
-  auto stream = beast::tcp_stream{ioc};
-  stream.connect(tcp::endpoint(tcp::v4(), port));
-
-  auto const version = 10;
-  auto const req = http::request<http::string_body>{method, path, version};
-
-  http::write(stream, req);
-
-  auto read_buffer = beast::flat_buffer{};
-  auto response = http::response<http::dynamic_body>{};
-  http::read(stream, read_buffer, response);
-
-  // Gracefully close the socket
-  beast::error_code ec;
-  stream.socket().shutdown(tcp::socket::shutdown_both, ec);
-
-  // not_connected happens sometimes
-  // so don't bother reporting it.
-  //
-  if (ec && ec != beast::errc::not_connected)
-    throw beast::system_error{ec};
-
-  // If we get here then the connection is closed gracefully
-  return make_tuple(response, read_buffer);
-}
-
-auto http_get(port port, const string& path) {
-  return http_request(http::verb::get, port, path);
-}
-
 auto server_guard(port port) {
   struct server_guard {
     server_guard(::port port) {
@@ -309,7 +278,7 @@ void test_multiple_gets() {
   auto const server_guard = ::server_guard(port);
 
   for (int i = 0; i < 2; i++) {
-    auto const [response, _] = http_get(port, "/");
+    auto [response, _] = http_get(port, "/");
     assert(http::to_status_class(response.result()) ==
            http::status_class::successful);
   }
@@ -318,7 +287,7 @@ void test_multiple_gets() {
 void test_unsupported_verb() {
   auto const port = 8081;
   auto server_guard = ::server_guard(port);
-  auto const [response, _] = http_request(http::verb::mkcalendar, port, "/");
+  auto [response, _] = http_request(http::verb::mkcalendar, port, "/");
   assert(http::to_status_class(response.result()) ==
          http::status_class::client_error);
 }

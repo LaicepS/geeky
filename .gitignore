@@ -5,3 +5,5 @@ venv
 scrapper/tutorial
 api_server/search/migrations/*
 tags
+build/
+.clangd/
