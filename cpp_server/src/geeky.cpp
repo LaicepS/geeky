@@ -281,8 +281,8 @@ void test_root_get() {
   assert(http::to_status_class(response.result()) ==
          http::status_class::successful);
 
-  for (auto field = response.begin(); field != response.end(); field++)
-    cout << field->name() << endl;
+  // for (auto field = response.begin(); field != response.end(); field++)
+  //  cout << field->name() << endl;
 }
 
 void test_unsupported_verb() {
