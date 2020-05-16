@@ -273,15 +273,16 @@ auto server_guard(port port) {
   return server_guard(port);
 }
 
-void test_multiple_gets() {
+void test_root_get() {
   auto const port = 8081;
   auto const server_guard = ::server_guard(port);
 
-  for (int i = 0; i < 2; i++) {
-    auto [response, _] = http_get(port, "/");
-    assert(http::to_status_class(response.result()) ==
-           http::status_class::successful);
-  }
+  auto [response, _] = http_get(port, "/");
+  assert(http::to_status_class(response.result()) ==
+         http::status_class::successful);
+
+  for (auto field = response.begin(); field != response.end(); field++)
+    cout << field->name() << endl;
 }
 
 void test_unsupported_verb() {
@@ -296,14 +297,14 @@ void test_search() {
   auto const port = 8081;
   auto const server_guard = ::server_guard(port);
 
-  auto [response, _] = http_get(port, "/search");
+  auto [response, _] = http_get(port, "/search?");
   assert(http::to_status_class(response.result()) ==
          http::status_class::successful);
 }
 
 void http_tests() {
   test_search();
-  test_multiple_gets();
+  test_root_get();
   test_unsupported_verb();
 };
 
