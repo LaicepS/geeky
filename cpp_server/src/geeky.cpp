@@ -292,7 +292,17 @@ void test_unsupported_verb() {
          http::status_class::client_error);
 }
 
+void test_search() {
+  auto const port = 8081;
+  auto const server_guard = ::server_guard(port);
+
+  auto [response, _] = http_get(port, "/search");
+  assert(http::to_status_class(response.result()) ==
+         http::status_class::successful);
+}
+
 void http_tests() {
+  test_search();
   test_multiple_gets();
   test_unsupported_verb();
 };
@@ -316,7 +326,7 @@ int main(int argc, char* argv[]) {
   check_args(argc);
 
   auto const port = static_cast<::port>(std::atoi(argv[1]));
-  auto const threads = std::max<int>(1, std::atoi(argv[2]));
+  auto const threads = max(1, std::atoi(argv[2]));
 
   net::io_context ioc{threads};
 
