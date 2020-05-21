@@ -6,9 +6,11 @@
 #include <cstddef>
 #include <cstdlib>
 #include <experimental/filesystem>
+#include <fstream>
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <thread>
 #include <unordered_map>
@@ -54,12 +56,12 @@ namespace fs = std::experimental::filesystem;
 
 using byte = unsigned char;
 
-using server_files = unordered_map<std::string, vector<byte>>;
+using file_map = unordered_map<std::string, std::string>;
 
 template <class Body, class Allocator, class Send>
 void handle_request(http::request<Body, http::basic_fields<Allocator>>&& req,
                     Send&& send,
-                    ::server_files const& server_files) {
+                    ::file_map const& server_files) {
   // Returns a bad request response
   auto const bad_request = [&req](beast::string_view why) {
     http::response<http::string_body> res{http::status::bad_request,
@@ -89,7 +91,7 @@ void handle_request(http::request<Body, http::basic_fields<Allocator>>&& req,
   file_result.set(http::field::content_type, "text/html");
   file_result.keep_alive(req.keep_alive());
 
-  beast::ostream(file_result.body()) << "hello";
+  beast::ostream(file_result.body()) << index_file;
 
   return send(std::move(file_result));
 }
@@ -127,7 +129,7 @@ struct session : std::enable_shared_from_this<session> {
     }
   };
 
-  session(tcp::socket&& socket, server_files const& server_files)
+  session(tcp::socket&& socket, file_map const& server_files)
       : stream_(std::move(socket)),
         lambda_(*this),
         server_files_(server_files) {}
@@ -217,7 +219,7 @@ struct session : std::enable_shared_from_this<session> {
   http::request<http::string_body> req_;
   std::shared_ptr<void> res_;
   send_lambda lambda_;
-  server_files server_files_;
+  file_map server_files_;
 };
 
 namespace gky {
@@ -231,7 +233,7 @@ void throw_error(const boost::system::error_code& ec, const string& error) {
 struct listener : std::enable_shared_from_this<listener> {
   listener(net::io_context& ioc,
            tcp::endpoint endpoint,
-           server_files const& server_files)
+           file_map const& server_files)
       : ioc_(ioc),
         acceptor_(net::make_strand(ioc)),
         server_files_(server_files) {
@@ -275,21 +277,36 @@ struct listener : std::enable_shared_from_this<listener> {
 
   net::io_context& ioc_;
   tcp::acceptor acceptor_;
-  server_files server_files_;
+  file_map server_files_;
 };
 
 auto server_guard(port port) {
   struct server_guard {
     server_guard(::port port) {
       auto const endpoint = tcp::endpoint(tcp::v4(), port);
-      server_files sv;
-      sv["/"];
-      server_ = std::make_shared<listener>(ioc_, endpoint, sv);
+      auto const files = load_files();
+      server_ = std::make_shared<listener>(ioc_, endpoint, files);
 
       server_thread = thread([server = this->server_, &ioc = this->ioc_]() {
         server->run();
         ioc.run();
       });
+    }
+
+    auto load_file(string const& path) {
+      ifstream f(root_path + path);
+      string content;
+      string curr_line;
+      while (std::getline(f, curr_line))
+        content += curr_line;
+
+      return content;
+    }
+
+    file_map load_files() {
+      file_map sv;
+      sv["/"] = load_file("index.html");
+      return sv;
     }
 
     ~server_guard() {
@@ -300,6 +317,7 @@ auto server_guard(port port) {
     io_context ioc_{1};
     std::shared_ptr<listener> server_;
     thread server_thread;
+    const string root_path = "/home/dorian/geeky/cpp_server/src/html/";
   };
 
   return server_guard(port);
@@ -363,8 +381,7 @@ int main(int argc, char* argv[]) {
 
   net::io_context ioc{threads};
 
-  std::make_shared<listener>(ioc, tcp::endpoint{tcp::v4(), port},
-                             server_files{})
+  std::make_shared<listener>(ioc, tcp::endpoint{tcp::v4(), port}, file_map{})
       ->run();
 
   std::vector<std::thread> v;

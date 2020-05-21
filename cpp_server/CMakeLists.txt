@@ -12,6 +12,7 @@ set(CPP_WARNINGS " \
     -Wold-style-cast \
     -Wcast-align \
     -Wunused \
+    -Wunused-variable \
     -Woverloaded-virtual \
     -Wpedantic -Wconversion \
     -Wsign-conversion \
