@@ -1,3 +1,4 @@
+#include <c++/6/experimental/bits/fs_fwd.h>
 #include <algorithm>
 #include <boost/beast/core/flat_buffer.hpp>
 #include <boost/beast/core/ostream.hpp>
@@ -280,6 +281,15 @@ struct listener : std::enable_shared_from_this<listener> {
   file_map server_files_;
 };
 
+#include <libgen.h>
+
+string dirname(string const& path) {
+  char c_path[128];
+  strcpy(c_path, path.c_str());
+  ::dirname(c_path);
+  return c_path;
+}
+
 auto server_guard(port port) {
   struct server_guard {
     server_guard(::port port) {
@@ -305,7 +315,7 @@ auto server_guard(port port) {
 
     file_map load_files() {
       file_map sv;
-      sv["/"] = load_file("index.html");
+      sv["/"] = load_file("/index.html");
       return sv;
     }
 
@@ -317,7 +327,7 @@ auto server_guard(port port) {
     io_context ioc_{1};
     std::shared_ptr<listener> server_;
     thread server_thread;
-    const string root_path = "/home/dorian/geeky/cpp_server/src/html/";
+    const string root_path = dirname(__FILE__) + "/html";
   };
 
   return server_guard(port);
@@ -352,8 +362,8 @@ void test_search() {
 }
 
 void http_tests() {
-  test_search();
   test_get_root();
+  test_search();
   test_unsupported_verb();
 };
 
