@@ -19,7 +19,7 @@ http_response http_request(http::verb method, port port, string const& path) {
   stream.connect(tcp::endpoint(tcp::v4(), port));
 
   auto const version = 10;
-  auto const req = http::request<http::string_body>{method, path, version};
+  auto req = http::request<http::string_body>{method, path, version};
 
   http::write(stream, req);
 
