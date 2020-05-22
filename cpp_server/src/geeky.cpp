@@ -368,22 +368,28 @@ void run_tests() {
   http_tests();
 }
 
-void check_args(int argc) {
+auto get_args(int argc, char** argv) {
   if (argc != 3) {
     std::cerr << "Usage: http-server-async <port> <root_path>\n"
               << "Example:\n"
               << "    http-server-async 8080 1\n";
     exit(0);
   }
+
+  return make_tuple(::port(std::atoi(argv[1])), string(argv[2]));
+}
+
+void start_ioc_threads(io_context& ioc, int num_threads) {
+  vector<thread> v;
+  for (auto i = 0; i < num_threads - 1; i++)
+    v.emplace_back([&ioc] { ioc.run(); });
+  ioc.run();
 }
 
 int main(int argc, char* argv[]) {
   run_tests();
 
-  check_args(argc);
-
-  auto const port = static_cast<::port>(std::atoi(argv[1]));
-  auto const root_path = argv[2];
+  auto const [port, root_path] = get_args(argc, argv);
 
   auto const threads = 1;
   net::io_context ioc{threads};
@@ -394,10 +400,7 @@ int main(int argc, char* argv[]) {
                                         file_map)
       ->run();
 
-  std::vector<std::thread> v;
-  for (auto i = threads - 1; i > 0; --i)
-    v.emplace_back([&ioc] { ioc.run(); });
-  ioc.run();
+  start_ioc_threads(ioc, threads);
 
   return 0;
 }
