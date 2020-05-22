@@ -31,6 +31,7 @@
 #include <boost/core/ignore_unused.hpp>
 #include <boost/system/error_code.hpp>
 
+#include "filesystem.h"
 #include "http_helpers.h"
 
 using namespace std;
@@ -291,15 +292,6 @@ struct listener : std::enable_shared_from_this<listener> {
   tcp::acceptor acceptor_;
   file_map server_files_;
 };
-
-#include <libgen.h>
-
-string dirname(string const& path) {
-  char c_path[128];
-  strcpy(c_path, path.c_str());
-  ::dirname(c_path);
-  return c_path;
-}
 
 auto server_guard(port port) {
   struct server_guard {
