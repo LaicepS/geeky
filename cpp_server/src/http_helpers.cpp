@@ -1,5 +1,6 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/beast/core.hpp>
+#include <boost/beast/core/buffers_to_string.hpp>
 
 #include "http_helpers.h"
 
@@ -10,6 +11,7 @@ using namespace std;
 
 using tcp = boost::asio::ip::tcp;  // from <boost/asio/ip/tcp.hpp>
 
+#include <iostream>
 namespace gky {
 
 http_response http_request(http::verb method, port port, string const& path) {
@@ -26,6 +28,7 @@ http_response http_request(http::verb method, port port, string const& path) {
   auto read_buffer = beast::flat_buffer{};
   auto response = http::response<http::dynamic_body>{};
   http::read(stream, read_buffer, response);
+  auto const content = beast::buffers_to_string(response.body().cdata());
 
   // Gracefully close the socket
   beast::error_code ec;

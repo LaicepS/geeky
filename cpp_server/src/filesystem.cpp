@@ -1,10 +1,12 @@
 #include <libgen.h>
+#include <iostream>
 
 #include <cstring>
 #include <fstream>
 #include <string>
 
 #include "filesystem.h"
+
 
 using namespace std;
 
@@ -19,6 +21,8 @@ path dirname(path const& path) {
 
 string load_file(string const& path) {
   ifstream f(path);
+  if (!f.good())
+    throw runtime_error("Could not open " + path);
   string content;
   string curr_line;
   while (std::getline(f, curr_line))

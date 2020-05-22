@@ -1,7 +1,9 @@
 #include <c++/6/experimental/bits/fs_fwd.h>
 #include <algorithm>
+#include <boost/beast/core/buffers_to_string.hpp>
 #include <boost/beast/core/flat_buffer.hpp>
 #include <boost/beast/core/ostream.hpp>
+#include <boost/beast/core/string_type.hpp>
 #include <boost/beast/http/dynamic_body.hpp>
 #include <boost/beast/http/file_body.hpp>
 #include <cstddef>
@@ -83,7 +85,7 @@ void handle_request(http::request<Body, http::basic_fields<Allocator>>&& req,
       req.target().find("..") != beast::string_view::npos)
     return send(bad_request("Illegal request-target"));
 
-  if (req.target().find("search")) {
+  if (req.target().find("search") != beast::string_view::npos) {
     http::response<http::dynamic_body> response;
 
     response.set(http::field::server, BOOST_BEAST_VERSION_STRING);
@@ -242,10 +244,10 @@ void throw_error(const boost::system::error_code& ec, const string& error) {
 
 }  // namespace gky
 
-struct listener : std::enable_shared_from_this<listener> {
-  listener(net::io_context& ioc,
-           tcp::endpoint endpoint,
-           file_map const& server_files)
+struct connection_listener : std::enable_shared_from_this<connection_listener> {
+  connection_listener(net::io_context& ioc,
+                      tcp::endpoint endpoint,
+                      file_map const& server_files)
       : ioc_(ioc),
         acceptor_(net::make_strand(ioc)),
         server_files_(server_files) {
@@ -275,7 +277,8 @@ struct listener : std::enable_shared_from_this<listener> {
   void do_accept() {
     acceptor_.async_accept(
         net::make_strand(ioc_),
-        beast::bind_front_handler(&listener::on_accept, shared_from_this()));
+        beast::bind_front_handler(&connection_listener::on_accept,
+                                  shared_from_this()));
   }
 
   void on_accept(beast::error_code ec, tcp::socket socket) {
@@ -299,12 +302,11 @@ file_map populate(string const& root) {
   return sv;
 }
 
-auto server_guard(port port) {
+auto server_guard(port port, file_map const& file_map) {
   struct server_guard {
-    server_guard(::port port) {
+    server_guard(::port port, ::file_map const& file_map) {
       auto const endpoint = tcp::endpoint(tcp::v4(), port);
-      auto const files = populate(root_path);
-      server_ = std::make_shared<listener>(ioc_, endpoint, files);
+      server_ = std::make_shared<connection_listener>(ioc_, endpoint, file_map);
 
       server_thread = thread([server = this->server_, &ioc = this->ioc_]() {
         server->run();
@@ -318,28 +320,29 @@ auto server_guard(port port) {
     }
 
     io_context ioc_{1};
-    std::shared_ptr<listener> server_;
+    std::shared_ptr<connection_listener> server_;
     thread server_thread;
-    const string root_path = dirname(__FILE__) + "/html";
   };
 
-  return server_guard(port);
+  return server_guard(port, file_map);
 }
 
 void test_get_root() {
   auto const port = 8081;
-  auto const server_guard = ::server_guard(port);
+  auto const file_map = populate(dirname(__FILE__) + "/html");
+  auto const server_guard = ::server_guard(port, file_map);
 
   auto [response, buffer] = http_get(port, "/");
   assert(http::to_status_class(response.result()) ==
          http::status_class::successful);
   assert(response.at("Content-Type") == "text/html");
-  assert(response.body().size());
+  assert(beast::buffers_to_string(response.body().data()) == file_map.at("/"));
 }
 
 void test_unsupported_verb() {
   auto const port = 8081;
-  auto server_guard = ::server_guard(port);
+  auto const file_map = populate(dirname(__FILE__) + "/html");
+  auto server_guard = ::server_guard(port, file_map);
   auto [response, _] = http_request(http::verb::mkcalendar, port, "/");
   assert(http::to_status_class(response.result()) ==
          http::status_class::client_error);
@@ -347,7 +350,8 @@ void test_unsupported_verb() {
 
 void test_search() {
   auto const port = 8081;
-  auto const server_guard = ::server_guard(port);
+  auto const file_map = populate(dirname(__FILE__) + "/html");
+  auto const server_guard = ::server_guard(port, file_map);
 
   auto [response, _] = http_get(port, "/search?");
   assert(http::to_status_class(response.result()) ==
@@ -380,12 +384,14 @@ int main(int argc, char* argv[]) {
 
   auto const port = static_cast<::port>(std::atoi(argv[1]));
   auto const root_path = argv[2];
-  auto const threads = 1;
 
+  auto const threads = 1;
   net::io_context ioc{threads};
+
   auto const file_map = populate(root_path);
 
-  std::make_shared<listener>(ioc, tcp::endpoint{tcp::v4(), port}, file_map)
+  std::make_shared<connection_listener>(ioc, tcp::endpoint{tcp::v4(), port},
+                                        file_map)
       ->run();
 
   std::vector<std::thread> v;
