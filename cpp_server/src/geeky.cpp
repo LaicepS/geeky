@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <cstdlib>
 #include <experimental/filesystem>
-#include <fstream>
 #include <functional>
 #include <iostream>
 #include <memory>
@@ -293,34 +292,24 @@ struct listener : std::enable_shared_from_this<listener> {
   file_map server_files_;
 };
 
+file_map populate(string const& root) {
+  file_map sv;
+  sv["/"] = load_file(root + "/index.html");
+  sv["/index.css"] = load_file(root + "/index.css");
+  return sv;
+}
+
 auto server_guard(port port) {
   struct server_guard {
     server_guard(::port port) {
       auto const endpoint = tcp::endpoint(tcp::v4(), port);
-      auto const files = load_files();
+      auto const files = populate(root_path);
       server_ = std::make_shared<listener>(ioc_, endpoint, files);
 
       server_thread = thread([server = this->server_, &ioc = this->ioc_]() {
         server->run();
         ioc.run();
       });
-    }
-
-    auto load_file(string const& path) {
-      ifstream f(root_path + path);
-      string content;
-      string curr_line;
-      while (std::getline(f, curr_line))
-        content += curr_line;
-
-      return content;
-    }
-
-    file_map load_files() {
-      file_map sv;
-      sv["/"] = load_file("/index.html");
-      sv["/index.css"] = load_file("/index.css");
-      return sv;
     }
 
     ~server_guard() {
@@ -390,12 +379,13 @@ int main(int argc, char* argv[]) {
   check_args(argc);
 
   auto const port = static_cast<::port>(std::atoi(argv[1]));
-  // auto const root_path = std::experimental::filesystem::path(argv[2]);
+  auto const root_path = argv[2];
   auto const threads = 1;
 
   net::io_context ioc{threads};
+  auto const file_map = populate(root_path);
 
-  std::make_shared<listener>(ioc, tcp::endpoint{tcp::v4(), port}, file_map{})
+  std::make_shared<listener>(ioc, tcp::endpoint{tcp::v4(), port}, file_map)
       ->run();
 
   std::vector<std::thread> v;
