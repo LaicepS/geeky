@@ -1,14 +1,10 @@
 #pragma once
 
-#include <experimental/filesystem>
+#include <string>
 
 namespace gky {
 
-struct filesystem {
-  using path = std::experimental::filesystem::path;
+using path = std::string;
 
-  virtual path root() = 0;
-
-  virtual ~filesystem() {}
-};
+path dirname(path const& path);
 }

@@ -83,30 +83,29 @@ void handle_request(http::request<Body, http::basic_fields<Allocator>>&& req,
       req.target().find("..") != beast::string_view::npos)
     return send(bad_request("Illegal request-target"));
 
-  if (req.target() == "/search?") {
-    http::response<http::dynamic_body> file_result;
+  if (req.target().find("search")) {
+    http::response<http::dynamic_body> response;
 
-    file_result.set(http::field::server, BOOST_BEAST_VERSION_STRING);
-    file_result.set(http::field::content_type, "text/html");
-    file_result.keep_alive(req.keep_alive());
+    response.set(http::field::server, BOOST_BEAST_VERSION_STRING);
+    response.set(http::field::content_type, "text/html");
+    response.keep_alive(req.keep_alive());
 
-    beast::ostream(file_result.body()) << "<html></html>";
+    beast::ostream(response.body()) << "<html></html>";
 
-    return send(std::move(file_result));
+    return send(std::move(response));
   }
 
-  // Respond to GET request
-  auto const index_file = server_files.at(string(req.target()));
+  auto const content = server_files.at(string(req.target()));
 
-  http::response<http::dynamic_body> file_result;
+  http::response<http::dynamic_body> response;
 
-  file_result.set(http::field::server, BOOST_BEAST_VERSION_STRING);
-  file_result.set(http::field::content_type, "text/html");
-  file_result.keep_alive(req.keep_alive());
+  response.set(http::field::server, BOOST_BEAST_VERSION_STRING);
+  response.set(http::field::content_type, "text/html");
+  response.keep_alive(req.keep_alive());
 
-  beast::ostream(file_result.body()) << index_file;
+  beast::ostream(response.body()) << content;
 
-  return send(std::move(file_result));
+  return send(std::move(response));
 }
 
 // Report a failure
@@ -328,7 +327,7 @@ auto server_guard(port port) {
     file_map load_files() {
       file_map sv;
       sv["/"] = load_file("/index.html");
-      sv["/"] = load_file("/index.css");
+      sv["/index.css"] = load_file("/index.css");
       return sv;
     }
 
