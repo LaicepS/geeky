@@ -83,8 +83,20 @@ void handle_request(http::request<Body, http::basic_fields<Allocator>>&& req,
       req.target().find("..") != beast::string_view::npos)
     return send(bad_request("Illegal request-target"));
 
+  if (req.target() == "/search?") {
+    http::response<http::dynamic_body> file_result;
+
+    file_result.set(http::field::server, BOOST_BEAST_VERSION_STRING);
+    file_result.set(http::field::content_type, "text/html");
+    file_result.keep_alive(req.keep_alive());
+
+    beast::ostream(file_result.body()) << "<html></html>";
+
+    return send(std::move(file_result));
+  }
+
   // Respond to GET request
-  auto const index_file = server_files.at("/");
+  auto const index_file = server_files.at(string(req.target()));
 
   http::response<http::dynamic_body> file_result;
 
@@ -316,6 +328,7 @@ auto server_guard(port port) {
     file_map load_files() {
       file_map sv;
       sv["/"] = load_file("/index.html");
+      sv["/"] = load_file("/index.css");
       return sv;
     }
 
