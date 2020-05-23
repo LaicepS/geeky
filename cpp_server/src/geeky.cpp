@@ -115,13 +115,13 @@ void fail(beast::error_code ec, char const* what) {
   std::cerr << what << ": " << ec.message() << "\n";
 }
 
-struct session : std::enable_shared_from_this<session> {
+struct http_session : std::enable_shared_from_this<http_session> {
   // This is the C++11 equivalent of a generic lambda.
   // The function object is used to send an HTTP message.
   struct send_lambda {
-    session& self_;
+    http_session& self_;
 
-    explicit send_lambda(session& self) : self_(self) {}
+    explicit send_lambda(http_session& self) : self_(self) {}
 
     template <bool isRequest, class Body, class Fields>
     void operator()(http::message<isRequest, Body, Fields>&& msg) const {
@@ -138,12 +138,12 @@ struct session : std::enable_shared_from_this<session> {
       // Write the response
       http::async_write(
           self_.stream_, *sp,
-          beast::bind_front_handler(&session::on_write,
+          beast::bind_front_handler(&http_session::on_write,
                                     self_.shared_from_this(), sp->need_eof()));
     }
   };
 
-  session(tcp::socket&& socket, file_map const& server_files)
+  http_session(tcp::socket&& socket, file_map const& server_files)
       : stream_(std::move(socket)),
         lambda_(*this),
         server_files_(server_files) {}
@@ -156,7 +156,7 @@ struct session : std::enable_shared_from_this<session> {
     // thread-safe by default.
     net::dispatch(
         stream_.get_executor(),
-        beast::bind_front_handler(&session::do_read, shared_from_this()));
+        beast::bind_front_handler(&http_session::do_read, shared_from_this()));
   }
 
   void do_read() {
@@ -168,7 +168,7 @@ struct session : std::enable_shared_from_this<session> {
 
     http::async_read(
         stream_, buffer_, req_,
-        beast::bind_front_handler(&session::on_read, shared_from_this()));
+        beast::bind_front_handler(&http_session::on_read, shared_from_this()));
   }
 
   void on_read(beast::error_code ec, std::size_t bytes_transferred) {
@@ -198,7 +198,7 @@ struct session : std::enable_shared_from_this<session> {
     // Write the response
     http::async_write(
         stream_, *sp,
-        beast::bind_front_handler(&session::on_write, shared_from_this(),
+        beast::bind_front_handler(&http_session::on_write, shared_from_this(),
                                   sp->need_eof()));
   }
 
@@ -247,10 +247,8 @@ void throw_error(const boost::system::error_code& ec, const string& error) {
 struct connection_listener : std::enable_shared_from_this<connection_listener> {
   connection_listener(net::io_context& ioc,
                       tcp::endpoint endpoint,
-                      file_map const& server_files)
-      : ioc_(ioc),
-        acceptor_(net::make_strand(ioc)),
-        server_files_(server_files) {
+                      file_map const& http_files)
+      : ioc_(ioc), acceptor_(net::make_strand(ioc)), http_files_(http_files) {
     setup_acceptor(endpoint);
   }
 
@@ -285,14 +283,14 @@ struct connection_listener : std::enable_shared_from_this<connection_listener> {
     if (ec)
       fail(ec, "accept");
     else
-      std::make_shared<session>(std::move(socket), server_files_)->run();
+      std::make_shared<http_session>(std::move(socket), http_files_)->run();
 
     do_accept();
   }
 
   net::io_context& ioc_;
   tcp::acceptor acceptor_;
-  file_map server_files_;
+  file_map http_files_;
 };
 
 file_map populate(string const& root) {
@@ -373,7 +371,7 @@ auto get_args(int argc, char** argv) {
     std::cerr << "Usage: http-server-async <port> <root_path>\n"
               << "Example:\n"
               << "    http-server-async 8080 1\n";
-    exit(0);
+    exit(1);
   }
 
   return make_tuple(::port(std::atoi(argv[1])), string(argv[2]));
