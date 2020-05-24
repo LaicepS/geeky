@@ -80,20 +80,18 @@ void handle_request(http::request<Body, http::basic_fields<Allocator>>&& req,
   if (req.method() != http::verb::get)
     return send(bad_request("Unknown HTTP-method"));
 
-  // Request path must be absolute and not contain "..".
   if (req.target().empty() || req.target()[0] != '/' ||
       req.target().find("..") != beast::string_view::npos)
     return send(bad_request("Illegal request-target"));
 
-  if (req.target().find("search") != beast::string_view::npos) {
-    http::response<http::dynamic_body> response;
+  if (req.target().find("/search?") == 0) {
+    http::response<http::string_body> response;
 
     response.set(http::field::server, BOOST_BEAST_VERSION_STRING);
     response.set(http::field::content_type, "text/html");
     response.keep_alive(req.keep_alive());
 
-    beast::ostream(response.body()) << "<html></html>";
-
+    response.body() = server_files.at("/search.html");
     return send(std::move(response));
   }
 
@@ -151,9 +149,7 @@ struct http_session : std::enable_shared_from_this<http_session> {
   // Start the asynchronous operation
   void run() {
     // We need to be executing within a strand to perform async operations
-    // on the I/O objects in this session. Although not strictly necessary
-    // for single-threaded contexts, this example code is written to be
-    // thread-safe by default.
+    // on the I/O objects in this session.
     net::dispatch(
         stream_.get_executor(),
         beast::bind_front_handler(&http_session::do_read, shared_from_this()));
@@ -297,6 +293,7 @@ file_map populate(string const& root) {
   file_map sv;
   sv["/"] = load_file(root + "/index.html");
   sv["/index.css"] = load_file(root + "/index.css");
+  sv["/search.html"] = load_file(root + "/search.html");
   return sv;
 }
 
@@ -351,7 +348,7 @@ void test_search() {
   auto const file_map = populate(dirname(__FILE__) + "/html");
   auto const server_guard = ::server_guard(port, file_map);
 
-  auto [response, _] = http_get(port, "/search?");
+  auto [response, _] = http_get(port, "/search?toto");
   assert(http::to_status_class(response.result()) ==
          http::status_class::successful);
 }
