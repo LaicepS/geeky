@@ -97,13 +97,13 @@ void handle_request(http::request<Body, http::basic_fields<Allocator>>&& req,
 
   auto const content = server_files.at(string(req.target()));
 
-  http::response<http::dynamic_body> response;
+  http::response<http::string_body> response;
 
   response.set(http::field::server, BOOST_BEAST_VERSION_STRING);
   response.set(http::field::content_type, "text/html");
   response.keep_alive(req.keep_alive());
 
-  beast::ostream(response.body()) << content;
+  response.body() = content;
 
   return send(std::move(response));
 }
