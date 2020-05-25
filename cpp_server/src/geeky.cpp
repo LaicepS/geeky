@@ -61,6 +61,39 @@ using byte = unsigned char;
 
 using file_map = unordered_map<std::string, std::string>;
 
+auto make_html_response(std::string const& content) {
+  http::response<http::string_body> response;
+
+  response.set(http::field::server, BOOST_BEAST_VERSION_STRING);
+  response.set(http::field::content_type, "text/html");
+
+  response.body() = content;
+
+  return response;
+}
+
+template <class Body, class Allocator, class Send>
+auto handle_root_request(
+    http::request<Body, http::basic_fields<Allocator>> const& req,
+    Send const& send,
+    file_map const& server_files) {
+  auto const content = server_files.at(string(req.target()));
+  auto response = make_html_response(content);
+  response.keep_alive(req.keep_alive());
+  return send(std::move(response));
+}
+
+template <class Body, class Allocator, class Send>
+auto handle_search_request(
+    http::request<Body, http::basic_fields<Allocator>> const& req,
+    Send const& send,
+    file_map const& server_files) {
+  auto const content = server_files.at("/search.html");
+  auto response = make_html_response(content);
+  response.keep_alive(req.keep_alive());
+  return send(std::move(response));
+}
+
 template <class Body, class Allocator, class Send>
 void handle_request(http::request<Body, http::basic_fields<Allocator>>&& req,
                     Send&& send,
@@ -85,27 +118,12 @@ void handle_request(http::request<Body, http::basic_fields<Allocator>>&& req,
     return send(bad_request("Illegal request-target"));
 
   if (req.target().find("/search?") == 0) {
-    http::response<http::string_body> response;
-
-    response.set(http::field::server, BOOST_BEAST_VERSION_STRING);
-    response.set(http::field::content_type, "text/html");
-    response.keep_alive(req.keep_alive());
-
-    response.body() = server_files.at("/search.html");
-    return send(std::move(response));
+    return handle_search_request(req, send, server_files);
+  } else if (req.target() == "/") {
+    return handle_root_request(req, send, server_files);
+  } else {
+    return send(bad_request("Illegal request"));
   }
-
-  auto const content = server_files.at(string(req.target()));
-
-  http::response<http::string_body> response;
-
-  response.set(http::field::server, BOOST_BEAST_VERSION_STRING);
-  response.set(http::field::content_type, "text/html");
-  response.keep_alive(req.keep_alive());
-
-  response.body() = content;
-
-  return send(std::move(response));
 }
 
 // Report a failure
@@ -353,8 +371,19 @@ void test_search() {
          http::status_class::successful);
 }
 
+void test_get_wrong_url() {
+  auto const port = 8081;
+  auto const file_map = populate(dirname(__FILE__) + "/html");
+  auto const server_guard = ::server_guard(port, file_map);
+
+  auto [response, _] = http_get(port, "/bad_url");
+  assert(http::to_status_class(response.result()) ==
+         http::status_class::client_error);
+}
+
 void http_tests() {
   test_get_root();
+  test_get_wrong_url();
   test_search();
   test_unsupported_verb();
 };
