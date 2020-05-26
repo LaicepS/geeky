@@ -1,36 +1,13 @@
-#include <c++/6/experimental/bits/fs_fwd.h>
-#include <algorithm>
-#include <boost/beast/core/buffers_to_string.hpp>
-#include <boost/beast/core/flat_buffer.hpp>
-#include <boost/beast/core/ostream.hpp>
-#include <boost/beast/core/string_type.hpp>
-#include <boost/beast/http/dynamic_body.hpp>
-#include <boost/beast/http/file_body.hpp>
-#include <cstddef>
 #include <cstdlib>
-#include <experimental/filesystem>
-#include <functional>
 #include <iostream>
-#include <memory>
 #include <sstream>
 #include <string>
 #include <thread>
 #include <unordered_map>
 #include <vector>
 
-#include <boost/asio/detail/throw_error.hpp>
-#include <boost/asio/dispatch.hpp>
-#include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/strand.hpp>
-#include <boost/beast/core.hpp>
-#include <boost/beast/http.hpp>
-#include <boost/beast/http/status.hpp>
-#include <boost/beast/http/string_body.hpp>
-#include <boost/beast/http/verb.hpp>
-#include <boost/beast/version.hpp>
-#include <boost/config.hpp>
-#include <boost/core/ignore_unused.hpp>
-#include <boost/system/error_code.hpp>
+#include <boost/asio.hpp>
+#include <boost/beast.hpp>
 
 #include "connection_listener.h"
 #include "filesystem.h"
@@ -49,8 +26,6 @@ namespace beast = boost::beast;    // from <boost/beast.hpp>
 namespace http = beast::http;      // from <boost/beast/http.hpp>
 namespace net = boost::asio;       // from <boost/asio.hpp>
 using tcp = boost::asio::ip::tcp;  // from <boost/asio/ip/tcp.hpp>
-
-namespace fs = std::experimental::filesystem;
 
 // This function produces an HTTP response for the given
 // request. The type of the response object depends on the
