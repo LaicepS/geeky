@@ -8,6 +8,8 @@
 #include "http_session.h"
 
 namespace http = boost::beast::http;
+namespace asio = boost::asio;
+namespace beast = boost::beast;
 
 using tcp = boost::asio::ip::tcp;
 
@@ -27,7 +29,7 @@ auto make_html_response(std::string const& content)
   return response;
 }
 
-void fail(boost::beast::error_code ec, char const* what)
+void fail(beast::error_code ec, char const* what)
 {
   std::cerr << what << ": " << ec.message() << "\n";
 }
@@ -63,7 +65,7 @@ void handle_request(
     file_map const& server_files)
 {
   // Returns a bad request response
-  auto const bad_request = [&req](boost::beast::string_view why) {
+  auto const bad_request = [&req](beast::string_view why) {
     http::response<http::string_body> res{http::status::bad_request,
                                           req.version()};
     res.set(http::field::content_type, "text/html");
@@ -78,7 +80,7 @@ void handle_request(
     return send(bad_request("Unknown HTTP-method"));
 
   if (req.target().empty() || req.target()[0] != '/' ||
-      req.target().find("..") != boost::beast::string_view::npos)
+      req.target().find("..") != beast::string_view::npos)
     return send(bad_request("Illegal request-target"));
 
   if (req.target().find("/search?") == 0) {
@@ -117,7 +119,7 @@ struct http_session_impl
       // Write the response
       http::async_write(
           self_.stream_, *sp,
-          boost::beast::bind_front_handler(
+          beast::bind_front_handler(
               &http_session_impl::on_write, self_.shared_from_this(),
               sp->need_eof()));
     }
@@ -133,9 +135,9 @@ struct http_session_impl
   {
     // We need to be executing within a strand to perform async operations
     // on the I/O objects in this session.
-    boost::asio::dispatch(
+    asio::dispatch(
         stream_.get_executor(),
-        boost::beast::bind_front_handler(
+        beast::bind_front_handler(
             &http_session_impl::do_read, shared_from_this()));
   }
 
@@ -149,11 +151,11 @@ struct http_session_impl
 
     http::async_read(
         stream_, buffer_, req_,
-        boost::beast::bind_front_handler(
+        beast::bind_front_handler(
             &http_session_impl::on_read, shared_from_this()));
   }
 
-  void on_read(boost::beast::error_code ec, std::size_t bytes_transferred)
+  void on_read(beast::error_code ec, std::size_t bytes_transferred)
   {
     boost::ignore_unused(bytes_transferred);
 
@@ -182,14 +184,11 @@ struct http_session_impl
     // Write the response
     http::async_write(
         stream_, *sp,
-        boost::beast::bind_front_handler(
+        beast::bind_front_handler(
             &http_session_impl::on_write, shared_from_this(), sp->need_eof()));
   }
 
-  void on_write(
-      bool close,
-      boost::beast::error_code ec,
-      std::size_t bytes_transferred)
+  void on_write(bool close, beast::error_code ec, std::size_t bytes_transferred)
   {
     boost::ignore_unused(bytes_transferred);
 
@@ -209,14 +208,14 @@ struct http_session_impl
 
   void do_close()
   {
-    boost::beast::error_code ec;
+    beast::error_code ec;
     stream_.socket().shutdown(tcp::socket::shutdown_send, ec);
 
     // At this point the connection is closed gracefully
   }
 
-  boost::beast::tcp_stream stream_;
-  boost::beast::flat_buffer buffer_;
+  beast::tcp_stream stream_;
+  beast::flat_buffer buffer_;
   http::request<http::string_body> req_;
   std::shared_ptr<void> res_;
   send_lambda lambda_;
