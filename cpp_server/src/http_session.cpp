@@ -9,6 +9,8 @@
 
 namespace http = boost::beast::http;
 
+using tcp = boost::asio::ip::tcp;
+
 namespace
 {
 using namespace gky;
@@ -88,7 +90,6 @@ void handle_request(
   }
 }
 
-}  // namespace
 
 struct http_session_impl
     : std::enable_shared_from_this<http_session_impl>
@@ -122,9 +123,7 @@ struct http_session_impl
     }
   };
 
-  http_session_impl(
-      boost::asio::ip::tcp::socket&& socket,
-      file_map const& server_files)
+  http_session_impl(tcp::socket&& socket, file_map const& server_files)
       : stream_(std::move(socket)), lambda_(*this), server_files_(server_files)
   {
   }
@@ -211,7 +210,7 @@ struct http_session_impl
   void do_close()
   {
     boost::beast::error_code ec;
-    stream_.socket().shutdown(boost::asio::ip::tcp::socket::shutdown_send, ec);
+    stream_.socket().shutdown(tcp::socket::shutdown_send, ec);
 
     // At this point the connection is closed gracefully
   }
@@ -224,14 +223,15 @@ struct http_session_impl
   file_map server_files_;
 };
 
+}  // namespace
+
 namespace gky
 {
 std::shared_ptr<http_session> make_http_session(
-    boost::asio::ip::tcp::socket&& socket,
+    tcp::socket&& socket,
     file_map const& server_files)
 {
   return std::shared_ptr<http_session>(
-
       new http_session_impl(std::move(socket), server_files));
 }
 
