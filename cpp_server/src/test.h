@@ -5,6 +5,12 @@ namespace gky {
 struct tester {
   using test_fn = void (*)();
 
+  static tester& instance()
+  {
+    static tester instance;
+    return instance;
+  }
+
   auto add_test(test_fn f)
   {
     all_tests[test_idx++] = f;
@@ -26,11 +32,11 @@ struct tester {
 
 }  // namespace gky
 
-extern gky::tester tm;
+extern gky::tester tester_;
 
 #define CAT_(x, y) x##y
 #define CAT(x, y) CAT_(x, y)
 #define unittest(FUN)           \
   void FUN();                   \
-  auto CAT(FUN, __LINE__) = tm.add_test(FUN); \
+  auto CAT(FUN, __LINE__) = tester_.instance().add_test(FUN); \
   void FUN()

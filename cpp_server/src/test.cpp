@@ -1,3 +1,3 @@
 #include "test.h"
 
-gky::tester tm;
+gky::tester tester_;
