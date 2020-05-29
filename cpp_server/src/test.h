@@ -1,13 +1,16 @@
 #pragma once
 
 namespace gky {
+
 struct test_manager {
   using test_fn = void (*)();
 
-  int add_test(test_fn f)
+  auto add_test(test_fn f)
   {
     all_tests[test_idx++] = f;
-    return 0;
+
+    int dummy = 0;
+    return dummy;
   }
 
   void run_tests()
@@ -31,4 +34,3 @@ extern gky::test_manager tm;
   void FUN();                   \
   auto CAT(FUN, __LINE__) = tm.add_test(FUN); \
   void FUN()
-
