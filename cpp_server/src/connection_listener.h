@@ -1,14 +1,20 @@
 #pragma once
 
+#include <iostream>
 #include <memory>
 #include <string>
 
 #include "boost/asio.hpp"
+#include "boost/beast.hpp"
 
 #include "file_map.h"
 #include "http_session.h"
 
 namespace gky {
+
+inline void fail(boost::beast::error_code ec, char const* what) {
+  std::cerr << what << ": " << ec.message() << "\n";
+}
 
 void throw_error(const boost::system::error_code& ec,
                  const std::string& error) {
@@ -57,7 +63,7 @@ struct connection_listener : std::enable_shared_from_this<connection_listener> {
     if (ec)
       fail(ec, "accept");
     else
-      std::make_shared<http_session>(std::move(socket), http_files_)->run();
+      make_http_session(std::move(socket), http_files_)->run();
 
     do_accept();
   }
