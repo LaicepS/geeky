@@ -2,7 +2,7 @@
 
 namespace gky {
 
-struct test_manager {
+struct tester {
   using test_fn = void (*)();
 
   auto add_test(test_fn f)
@@ -26,7 +26,7 @@ struct test_manager {
 
 }  // namespace gky
 
-extern gky::test_manager tm;
+extern gky::tester tm;
 
 #define CAT_(x, y) x##y
 #define CAT(x, y) CAT_(x, y)
