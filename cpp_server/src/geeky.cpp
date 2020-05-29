@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <thread>
@@ -49,35 +50,44 @@ file_map populate(string const& root) {
   return sv;
 }
 
-auto server_guard(port port, file_map const& file_map) {
-  struct server_guard {
-    server_guard(::port port, ::file_map const& file_map) {
-      auto const endpoint = tcp::endpoint(tcp::v4(), port);
-      server_ = std::make_shared<connection_listener>(ioc_, endpoint, file_map);
+struct server_guard {
+  server_guard(::port port, ::file_map const& file_map) {
+    auto const endpoint = tcp::endpoint(tcp::v4(), port);
+    server_ = std::make_shared<connection_listener>(ioc_, endpoint, file_map);
 
-      server_thread = thread([server = this->server_, &ioc = this->ioc_]() {
-        server->run();
-        ioc.run();
-      });
-    }
+    server_thread = thread([server = this->server_, &ioc = this->ioc_]() {
+      server->run();
+      ioc.run();
+    });
+  }
 
-    ~server_guard() {
-      server_->stop();
-      server_thread.join();
-    }
+  ~server_guard() {
+    server_->stop();
+    server_thread.join();
+  }
 
-    io_context ioc_{1};
-    std::shared_ptr<connection_listener> server_;
-    thread server_thread;
-  };
+  io_context ioc_{1};
+  std::shared_ptr<connection_listener> server_;
+  thread server_thread;
+};
 
-  return server_guard(port, file_map);
+struct basic_server {
+  ::port port;
+  ::file_map file_map;
+  unique_ptr<server_guard> server_guard;
+};
+
+basic_server make_basic_server() {
+  auto const port = ::port(8081);
+  auto const file_map = populate(dirname(__FILE__) + "/html");
+  auto server_guard =
+      unique_ptr<::server_guard>(new ::server_guard(port, file_map));
+
+  return {port, file_map, std::move(server_guard)};
 }
 
 void test_get_root() {
-  auto const port = 8081;
-  auto const file_map = populate(dirname(__FILE__) + "/html");
-  auto const server_guard = ::server_guard(port, file_map);
+  auto [port, file_map, server_guard] = make_basic_server();
 
   auto [response, buffer] = http_get(port, "/");
   assert(http::to_status_class(response.result()) ==
@@ -87,18 +97,14 @@ void test_get_root() {
 }
 
 void test_unsupported_verb() {
-  auto const port = 8081;
-  auto const file_map = populate(dirname(__FILE__) + "/html");
-  auto server_guard = ::server_guard(port, file_map);
+  auto [port, file_map, server_guard] = make_basic_server();
   auto [response, _] = http_request(http::verb::mkcalendar, port, "/");
   assert(http::to_status_class(response.result()) ==
          http::status_class::client_error);
 }
 
 void test_search() {
-  auto const port = 8081;
-  auto const file_map = populate(dirname(__FILE__) + "/html");
-  auto const server_guard = ::server_guard(port, file_map);
+  auto [port, file_map, server_guard] = make_basic_server();
 
   auto [response, _] = http_get(port, "/search?toto");
   assert(http::to_status_class(response.result()) ==
@@ -106,9 +112,7 @@ void test_search() {
 }
 
 void test_get_wrong_url() {
-  auto const port = 8081;
-  auto const file_map = populate(dirname(__FILE__) + "/html");
-  auto const server_guard = ::server_guard(port, file_map);
+  auto [port, file_map, server_guard] = make_basic_server();
 
   auto [response, _] = http_get(port, "/bad_url");
   assert(http::to_status_class(response.result()) ==
