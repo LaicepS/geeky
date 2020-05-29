@@ -72,22 +72,14 @@ struct server_guard {
 };
 
 struct basic_server {
-  ::port port;
-  ::file_map file_map;
-  unique_ptr<server_guard> server_guard;
+  ::port port = 8081;
+  ::file_map file_map = populate(dirname(__FILE__) + "/html");
+  unique_ptr<server_guard> server_guard =
+      std::make_unique<::server_guard>(port, file_map);
 };
 
-basic_server make_basic_server() {
-  auto const port = ::port(8081);
-  auto const file_map = populate(dirname(__FILE__) + "/html");
-  auto server_guard =
-      unique_ptr<::server_guard>(new ::server_guard(port, file_map));
-
-  return {port, file_map, std::move(server_guard)};
-}
-
 void test_get_root() {
-  auto [port, file_map, server_guard] = make_basic_server();
+  auto [port, file_map, server_guard] = basic_server();
 
   auto [response, buffer] = http_get(port, "/");
   assert(http::to_status_class(response.result()) ==
@@ -97,14 +89,14 @@ void test_get_root() {
 }
 
 void test_unsupported_verb() {
-  auto [port, file_map, server_guard] = make_basic_server();
+  auto [port, file_map, server_guard] = basic_server();
   auto [response, _] = http_request(http::verb::mkcalendar, port, "/");
   assert(http::to_status_class(response.result()) ==
          http::status_class::client_error);
 }
 
 void test_search() {
-  auto [port, file_map, server_guard] = make_basic_server();
+  auto [port, file_map, server_guard] = basic_server();
 
   auto [response, _] = http_get(port, "/search?toto");
   assert(http::to_status_class(response.result()) ==
@@ -112,7 +104,7 @@ void test_search() {
 }
 
 void test_get_wrong_url() {
-  auto [port, file_map, server_guard] = make_basic_server();
+  auto [port, file_map, server_guard] = basic_server();
 
   auto [response, _] = http_get(port, "/bad_url");
   assert(http::to_status_class(response.result()) ==
