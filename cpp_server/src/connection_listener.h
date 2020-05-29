@@ -2,10 +2,10 @@
 
 #include <memory>
 #include <string>
-#include <unordered_map>
 
 #include "boost/asio.hpp"
 
+#include "file_map.h"
 #include "http_session.h"
 
 namespace gky {
@@ -14,7 +14,6 @@ void throw_error(const boost::system::error_code& ec,
                  const std::string& error) {
   boost::asio::detail::throw_error(ec, error.c_str());
 }
-using file_map = std::unordered_map<std::string, std::string>;
 
 struct connection_listener : std::enable_shared_from_this<connection_listener> {
   connection_listener(boost::asio::io_context& ioc,

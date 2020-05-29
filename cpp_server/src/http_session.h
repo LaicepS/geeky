@@ -3,10 +3,11 @@
 #include <chrono>
 #include <iostream>
 #include <memory>
-#include <unordered_map>
 
 #include "boost/asio.hpp"
 #include "boost/beast.hpp"
+
+#include "file_map.h"
 
 namespace gky {
 
@@ -24,8 +25,6 @@ auto make_html_response(std::string const& content) {
 void fail(boost::beast::error_code ec, char const* what) {
   std::cerr << what << ": " << ec.message() << "\n";
 }
-
-using file_map = std::unordered_map<std::string, std::string>;
 
 template <class Body, class Allocator, class Send>
 auto handle_root_request(
