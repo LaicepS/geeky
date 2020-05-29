@@ -14,9 +14,7 @@ struct tester {
   auto add_test(test_fn f)
   {
     all_tests[test_idx++] = f;
-
-    int dummy = 0;
-    return dummy;
+    return 0;
   }
 
   void run_tests()
