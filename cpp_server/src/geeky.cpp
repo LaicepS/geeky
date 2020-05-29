@@ -13,6 +13,7 @@
 #include "connection_listener.h"
 #include "filesystem.h"
 #include "http_helpers.h"
+#include "test.h"
 
 using namespace std;
 using namespace gky;
@@ -78,7 +79,7 @@ struct basic_server {
       std::make_unique<::server_guard>(port, file_map);
 };
 
-void test_get_root() {
+unittest(test_get_root) {
   auto [port, file_map, server_guard] = basic_server();
 
   auto [response, buffer] = http_get(port, "/");
@@ -88,14 +89,15 @@ void test_get_root() {
   assert(beast::buffers_to_string(response.body().data()) == file_map.at("/"));
 }
 
-void test_unsupported_verb() {
+unittest(test_unsupported_verb)
+{
   auto [port, file_map, server_guard] = basic_server();
   auto [response, _] = http_request(http::verb::mkcalendar, port, "/");
   assert(http::to_status_class(response.result()) ==
          http::status_class::client_error);
 }
 
-void test_search() {
+unittest(test_search) {
   auto [port, file_map, server_guard] = basic_server();
 
   auto [response, _] = http_get(port, "/search?toto");
@@ -103,23 +105,13 @@ void test_search() {
          http::status_class::successful);
 }
 
-void test_get_wrong_url() {
+unittest(test_get_wrong_url)
+{
   auto [port, file_map, server_guard] = basic_server();
 
   auto [response, _] = http_get(port, "/bad_url");
   assert(http::to_status_class(response.result()) ==
          http::status_class::client_error);
-}
-
-void http_tests() {
-  test_get_root();
-  test_get_wrong_url();
-  test_search();
-  test_unsupported_verb();
-};
-
-void run_tests() {
-  http_tests();
 }
 
 auto get_args(int argc, char** argv) {
@@ -141,7 +133,7 @@ void start_ioc_threads(io_context& ioc, int num_threads) {
 }
 
 int main(int argc, char* argv[]) {
-  run_tests();
+  tm.run_tests();
 
   auto const [port, root_path] = get_args(argc, argv);
 

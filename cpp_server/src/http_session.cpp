@@ -7,6 +7,7 @@
 
 #include "file_map.h"
 #include "http_session.h"
+#include "test.h"
 
 namespace http = boost::beast::http;
 namespace asio = boost::asio;
@@ -59,6 +60,10 @@ auto handle_search_request(
   auto response = make_html_response(content);
   response.keep_alive(req.keep_alive());
   return send(std::move(response));
+}
+
+unittest(test_create_search_html) {
+  assert(false);
 }
 
 template <class Body, class Allocator, class Send>
