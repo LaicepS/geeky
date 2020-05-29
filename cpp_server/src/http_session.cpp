@@ -1,6 +1,7 @@
 #include <chrono>
 #include <iostream>
 #include <memory>
+#include <string>
 
 #include "boost/asio.hpp"
 #include "boost/beast.hpp"
@@ -16,6 +17,7 @@ namespace beast = boost::beast;
 using tcp = boost::asio::ip::tcp;
 
 using namespace std::chrono_literals;
+using namespace std;
 
 namespace
 {
@@ -62,8 +64,27 @@ auto handle_search_request(
   return send(std::move(response));
 }
 
+using html = string;
+using token = string;
+using tokens = vector<token>;
+using context = string;
+
+using search_database = vector<pair<token, context>>;
+
+html search_html_content(tokens const &, ::search_database const & ) {
+  return html();
+}
+
+bool is_valid_html(boost::string_view) {
+  return false;
+}
+
+unittest(test_is_valid_html) {
+  assert(!is_valid_html(""));
+}
+
 unittest(test_create_search_html) {
-  assert(false);
+  assert(is_valid_html(search_html_content({"hello", "world"}, {})));
 }
 
 template <class Body, class Allocator, class Send>
