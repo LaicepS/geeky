@@ -1,3 +1,4 @@
+#include <chrono>
 #include <iostream>
 #include <memory>
 
@@ -12,6 +13,8 @@ namespace asio = boost::asio;
 namespace beast = boost::beast;
 
 using tcp = boost::asio::ip::tcp;
+
+using namespace std::chrono_literals;
 
 namespace
 {
@@ -147,7 +150,7 @@ struct http_session_impl
     // otherwise the operation behavior is undefined.
     req_ = {};
 
-    stream_.expires_after(std::chrono::seconds(30));
+    stream_.expires_after(30s);
 
     http::async_read(
         stream_, buffer_, req_,
