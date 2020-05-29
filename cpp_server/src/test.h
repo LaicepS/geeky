@@ -30,11 +30,9 @@ struct tester {
 
 }  // namespace gky
 
-extern gky::tester tester_;
-
 #define CAT_(x, y) x##y
 #define CAT(x, y) CAT_(x, y)
 #define unittest(FUN)           \
   void FUN();                   \
-  auto CAT(FUN, __LINE__) = tester_.instance().add_test(FUN); \
+  auto CAT(FUN, __LINE__) = tester::instance().add_test(FUN); \
   void FUN()

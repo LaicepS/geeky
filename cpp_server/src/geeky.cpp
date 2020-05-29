@@ -133,7 +133,7 @@ void start_ioc_threads(io_context& ioc, int num_threads) {
 }
 
 int main(int argc, char* argv[]) {
-  tester_.run_tests();
+  tester::instance().run_tests();
 
   auto const [port, root_path] = get_args(argc, argv);
 
