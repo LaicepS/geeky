@@ -1,4 +1,8 @@
 ﻿---
 BasedOnStyle: Chromium
-
+BreakInheritanceList: BeforeComma
+AlignAfterOpenBracket: AlwaysBreak
+AllowShortBlocksOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Empty
+BreakBeforeBraces: Linux
 ...

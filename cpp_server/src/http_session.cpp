@@ -9,10 +9,12 @@
 
 namespace http = boost::beast::http;
 
-namespace {
+namespace
+{
 using namespace gky;
 
-auto make_html_response(std::string const& content) {
+auto make_html_response(std::string const& content)
+{
   http::response<http::string_body> response;
 
   response.set(http::field::server, BOOST_BEAST_VERSION_STRING);
@@ -23,7 +25,8 @@ auto make_html_response(std::string const& content) {
   return response;
 }
 
-void fail(boost::beast::error_code ec, char const* what) {
+void fail(boost::beast::error_code ec, char const* what)
+{
   std::cerr << what << ": " << ec.message() << "\n";
 }
 
@@ -31,7 +34,8 @@ template <class Body, class Allocator, class Send>
 auto handle_root_request(
     http::request<Body, http::basic_fields<Allocator>> const& req,
     Send const& send,
-    file_map const& server_files) {
+    file_map const& server_files)
+{
   auto const content = server_files.at(std::string(req.target()));
   auto response = make_html_response(content);
   response.keep_alive(req.keep_alive());
@@ -42,7 +46,8 @@ template <class Body, class Allocator, class Send>
 auto handle_search_request(
     http::request<Body, http::basic_fields<Allocator>> const& req,
     Send const& send,
-    file_map const& server_files) {
+    file_map const& server_files)
+{
   auto const content = server_files.at("/search.html");
   auto response = make_html_response(content);
   response.keep_alive(req.keep_alive());
@@ -50,9 +55,11 @@ auto handle_search_request(
 }
 
 template <class Body, class Allocator, class Send>
-void handle_request(http::request<Body, http::basic_fields<Allocator>>&& req,
-                    Send&& send,
-                    file_map const& server_files) {
+void handle_request(
+    http::request<Body, http::basic_fields<Allocator>>&& req,
+    Send&& send,
+    file_map const& server_files)
+{
   // Returns a bad request response
   auto const bad_request = [&req](boost::beast::string_view why) {
     http::response<http::string_body> res{http::status::bad_request,
@@ -83,8 +90,9 @@ void handle_request(http::request<Body, http::basic_fields<Allocator>>&& req,
 
 }  // namespace
 
-struct http_session_impl : std::enable_shared_from_this<http_session_impl>,
-                           gky::http_session {
+struct http_session_impl
+    : std::enable_shared_from_this<http_session_impl>
+    , gky::http_session {
   // This is the C++11 equivalent of a generic lambda.
   // The function object is used to send an HTTP message.
   struct send_lambda {
@@ -93,7 +101,8 @@ struct http_session_impl : std::enable_shared_from_this<http_session_impl>,
     explicit send_lambda(http_session_impl& self) : self_(self) {}
 
     template <bool isRequest, class Body, class Fields>
-    void operator()(http::message<isRequest, Body, Fields>&& msg) const {
+    void operator()(http::message<isRequest, Body, Fields>&& msg) const
+    {
       // The lifetime of the message has to extend
       // for the duration of the async operation so
       // we use a shared_ptr to manage it.
@@ -105,41 +114,48 @@ struct http_session_impl : std::enable_shared_from_this<http_session_impl>,
       self_.res_ = sp;
 
       // Write the response
-      http::async_write(self_.stream_, *sp,
-                        boost::beast::bind_front_handler(
-                            &http_session_impl::on_write,
-                            self_.shared_from_this(), sp->need_eof()));
+      http::async_write(
+          self_.stream_, *sp,
+          boost::beast::bind_front_handler(
+              &http_session_impl::on_write, self_.shared_from_this(),
+              sp->need_eof()));
     }
   };
 
-  http_session_impl(boost::asio::ip::tcp::socket&& socket,
-                    file_map const& server_files)
-      : stream_(std::move(socket)),
-        lambda_(*this),
-        server_files_(server_files) {}
-
-  // Start the asynchronous operation
-  void run() {
-    // We need to be executing within a strand to perform async operations
-    // on the I/O objects in this session.
-    boost::asio::dispatch(stream_.get_executor(),
-                          boost::beast::bind_front_handler(
-                              &http_session_impl::do_read, shared_from_this()));
+  http_session_impl(
+      boost::asio::ip::tcp::socket&& socket,
+      file_map const& server_files)
+      : stream_(std::move(socket)), lambda_(*this), server_files_(server_files)
+  {
   }
 
-  void do_read() {
+  // Start the asynchronous operation
+  void run()
+  {
+    // We need to be executing within a strand to perform async operations
+    // on the I/O objects in this session.
+    boost::asio::dispatch(
+        stream_.get_executor(),
+        boost::beast::bind_front_handler(
+            &http_session_impl::do_read, shared_from_this()));
+  }
+
+  void do_read()
+  {
     // Make the request empty before reading,
     // otherwise the operation behavior is undefined.
     req_ = {};
 
     stream_.expires_after(std::chrono::seconds(30));
 
-    http::async_read(stream_, buffer_, req_,
-                     boost::beast::bind_front_handler(
-                         &http_session_impl::on_read, shared_from_this()));
+    http::async_read(
+        stream_, buffer_, req_,
+        boost::beast::bind_front_handler(
+            &http_session_impl::on_read, shared_from_this()));
   }
 
-  void on_read(boost::beast::error_code ec, std::size_t bytes_transferred) {
+  void on_read(boost::beast::error_code ec, std::size_t bytes_transferred)
+  {
     boost::ignore_unused(bytes_transferred);
 
     if (ec == http::error::end_of_stream)
@@ -152,7 +168,8 @@ struct http_session_impl : std::enable_shared_from_this<http_session_impl>,
   }
 
   template <bool isRequest, class Body, class Fields>
-  void message_writer(http::message<isRequest, Body, Fields>&& msg) {
+  void message_writer(http::message<isRequest, Body, Fields>&& msg)
+  {
     // The lifetime of the message has to extend
     // for the duration of the async operation so
     // we use a shared_ptr to manage it.
@@ -166,13 +183,15 @@ struct http_session_impl : std::enable_shared_from_this<http_session_impl>,
     // Write the response
     http::async_write(
         stream_, *sp,
-        boost::beast::bind_front_handler(&http_session_impl::on_write,
-                                         shared_from_this(), sp->need_eof()));
+        boost::beast::bind_front_handler(
+            &http_session_impl::on_write, shared_from_this(), sp->need_eof()));
   }
 
-  void on_write(bool close,
-                boost::beast::error_code ec,
-                std::size_t bytes_transferred) {
+  void on_write(
+      bool close,
+      boost::beast::error_code ec,
+      std::size_t bytes_transferred)
+  {
     boost::ignore_unused(bytes_transferred);
 
     if (ec)
@@ -189,7 +208,8 @@ struct http_session_impl : std::enable_shared_from_this<http_session_impl>,
     do_read();
   }
 
-  void do_close() {
+  void do_close()
+  {
     boost::beast::error_code ec;
     stream_.socket().shutdown(boost::asio::ip::tcp::socket::shutdown_send, ec);
 
@@ -204,13 +224,15 @@ struct http_session_impl : std::enable_shared_from_this<http_session_impl>,
   file_map server_files_;
 };
 
-namespace gky {
-
+namespace gky
+{
 std::shared_ptr<http_session> make_http_session(
     boost::asio::ip::tcp::socket&& socket,
-    file_map const& server_files) {
+    file_map const& server_files)
+{
   return std::shared_ptr<http_session>(
+
       new http_session_impl(std::move(socket), server_files));
 }
-}  // namespace gky
 
+}  // namespace gky
