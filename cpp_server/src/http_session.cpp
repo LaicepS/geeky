@@ -65,11 +65,11 @@ html make_search_html(tokens const&, ::search_database const&)
   return html();
 }
 
-template <class Send>
+template <typename sender>
 auto handle_search_request(
     boost::string_view search_request,
     bool keep_alive,
-    Send const& send,
+    sender const& send,
     file_map const&)
 {
   (void)(search_request);
@@ -97,11 +97,10 @@ unittest(test_make_search_html)
   assert(make_search_html({"hello", "world"}, {}).to_string() == "");
 }
 
-
-template <class Body, class Allocator, class Send>
+template <class sender>
 void request_dispatcher(
-    http::request<Body, http::basic_fields<Allocator>>&& req,
-    Send&& send,
+    http::request<http::string_body>&& req,
+    sender&& send,
     file_map const& server_files)
 {
   // Returns a bad request response
