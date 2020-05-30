@@ -25,7 +25,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(EXTERNAL_INCLUDE "${CMAKE_CURRENT_LIST_DIR}/third_party/src/include")
 
-set(CMAKE_CXX_FLAGS "-std=c++17 -g -pedantic -Werror -isystem ${EXTERNAL_INCLUDE} -I${EXTERNAL_INCLUDE} ${CPP_WARNINGS} ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-std=c++17 -fprofile-instr-generate -fcoverage-mapping -g -pedantic -Werror -isystem ${EXTERNAL_INCLUDE} -I${EXTERNAL_INCLUDE} ${CPP_WARNINGS} ${CMAKE_CXX_FLAGS}")
 
 add_executable(geeky "src/geeky.cpp" "src/http_helpers.cpp" "src/filesystem.cpp"
   "src/http_session.cpp" "src/html.cpp")

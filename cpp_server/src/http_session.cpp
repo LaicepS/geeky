@@ -115,20 +115,34 @@ void request_dispatcher(
   }
 }
 
-unittest(test_request_handler)
+auto get_dispatcher_response(http::request<http::string_body>&& request)
 {
   http::response<http::string_body> response;
-  auto forwarder = [&response](http::response<http::string_body>&& r_) {
+  auto forwarder = [&](http::response<http::string_body>&& r_) {
     response = r_;
   };
 
-  request_dispatcher(
-      http::request<http::string_body>(http::verb::get, "/", 11),
-      move(forwarder), {{"/", "toto"}});
+  request_dispatcher(move(request), move(forwarder), {{"/", "toto"}});
 
+  return response;
+}
+
+unittest(test_basic_get_returns_2xx)
+{
   assert(
-      http::to_status_class(response.result()) ==
-      http::status_class::successful);
+      http::to_status_class(
+          get_dispatcher_response(
+              http::request<http::string_body>(http::verb::get, "/", 11))
+              .result()) == http::status_class::successful);
+}
+
+unittest(test_get_with_dots_returns_4xx)
+{
+  assert(
+      http::to_status_class(
+          get_dispatcher_response(
+              http::request<http::string_body>(http::verb::get, "..", 11))
+              .result()) == http::status_class::client_error);
 }
 
 struct http_session_impl
