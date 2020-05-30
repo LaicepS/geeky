@@ -18,15 +18,12 @@
 using namespace std;
 using namespace gky;
 
-using namespace boost;
 using namespace boost::asio;
-using namespace boost::asio::ip;
-
 using namespace boost::beast;
 
 namespace beast = boost::beast;    // from <boost/beast.hpp>
 namespace http = beast::http;      // from <boost/beast/http.hpp>
-namespace net = boost::asio;       // from <boost/asio.hpp>
+namespace asio = boost::asio;      // from <boost/asio.hpp>
 using tcp = boost::asio::ip::tcp;  // from <boost/asio/ip/tcp.hpp>
 
 // This function produces an HTTP response for the given
@@ -138,7 +135,7 @@ int main(int argc, char* argv[]) {
   auto const [port, root_path] = get_args(argc, argv);
 
   auto const threads = 1;
-  net::io_context ioc{threads};
+  asio::io_context ioc{threads};
 
   auto const file_map = populate(root_path);
 
