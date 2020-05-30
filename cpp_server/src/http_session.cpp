@@ -65,22 +65,38 @@ html make_search_html(tokens const&, ::search_database const&)
   return html();
 }
 
-template <class Body, class Allocator, class Send>
+template <class Send>
 auto handle_search_request(
-    http::request<Body, http::basic_fields<Allocator>> const& req,
+    boost::string_view search_request,
+    bool keep_alive,
     Send const& send,
     file_map const&)
 {
+  (void)(search_request);
   auto const html = make_search_html({}, {});
   auto response = make_html_response(html.to_string());
-  response.keep_alive(req.keep_alive());
+  response.keep_alive(keep_alive);
   return send(std::move(response));
+}
+
+constexpr boost::string_view extract_search_items(
+    boost::string_view search_request)
+{
+  auto const search_token = "/search?";
+  return boost::string_view(search_request.substr(sizeof(search_token)));
+}
+
+unittest(test_search_items_extraction) {
+  assert("foo" == extract_search_items("/search?foo"));
+  assert("/search?" == extract_search_items("/search?/search?"));
+  assert("  bar\t/search?" == extract_search_items("/search?  bar\t/search?"));
 }
 
 unittest(test_make_search_html)
 {
   assert(make_search_html({"hello", "world"}, {}).to_string() == "");
 }
+
 
 template <class Body, class Allocator, class Send>
 void request_dispatcher(
@@ -108,7 +124,9 @@ void request_dispatcher(
     return send(bad_request("Illegal request-target"));
 
   if (req.target().find("/search?") == 0) {
-    return handle_search_request(req, send, server_files);
+    return handle_search_request(
+        extract_search_items(req.target()), req.keep_alive(), send,
+        server_files);
   } else if (req.target() == "/") {
     return handle_root_request(req, send, server_files);
   } else {
