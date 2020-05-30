@@ -7,6 +7,8 @@
 #include "boost/beast.hpp"
 
 #include "file_map.h"
+#include "filesystem.h"
+#include "html.h"
 #include "http_session.h"
 #include "test.h"
 
@@ -52,43 +54,35 @@ auto handle_root_request(
   return send(std::move(response));
 }
 
+using token = string;
+using tokens = vector<token>;
+using context = string;
+using search_database = vector<pair<token, context>>;
+
+html make_search_html(tokens const&, ::search_database const&)
+{
+  return html();
+}
+
 template <class Body, class Allocator, class Send>
 auto handle_search_request(
     http::request<Body, http::basic_fields<Allocator>> const& req,
     Send const& send,
-    file_map const& server_files)
+    file_map const&)
 {
-  auto const content = server_files.at("/search.html");
-  auto response = make_html_response(content);
+  auto const html = make_search_html({}, {});
+  auto response = make_html_response(html.to_string());
   response.keep_alive(req.keep_alive());
   return send(std::move(response));
 }
 
-using html = string;
-using token = string;
-using tokens = vector<token>;
-using context = string;
-
-using search_database = vector<pair<token, context>>;
-
-html search_html_content(tokens const &, ::search_database const & ) {
-  return html();
-}
-
-bool is_valid_html(boost::string_view) {
-  return false;
-}
-
-unittest(test_is_valid_html) {
-  assert(!is_valid_html(""));
-}
-
-unittest(test_create_search_html) {
-  assert(is_valid_html(search_html_content({"hello", "world"}, {})));
+unittest(test_make_search_html)
+{
+  assert(make_search_html({"hello", "world"}, {}).to_string() == "");
 }
 
 template <class Body, class Allocator, class Send>
-void handle_request(
+void request_dispatcher(
     http::request<Body, http::basic_fields<Allocator>>&& req,
     Send&& send,
     file_map const& server_files)
@@ -121,6 +115,21 @@ void handle_request(
   }
 }
 
+unittest(test_request_handler)
+{
+  http::response<http::string_body> response;
+  auto forwarder = [&response](http::response<http::string_body>&& r_) {
+    response = r_;
+  };
+
+  request_dispatcher(
+      http::request<http::string_body>(http::verb::get, "/", 11),
+      move(forwarder), {{"/", "toto"}});
+
+  assert(
+      http::to_status_class(response.result()) ==
+      http::status_class::successful);
+}
 
 struct http_session_impl
     : std::enable_shared_from_this<http_session_impl>
@@ -194,7 +203,7 @@ struct http_session_impl
     if (ec)
       return fail(ec, "read");
 
-    handle_request(std::move(req_), lambda_, server_files_);
+    request_dispatcher(std::move(req_), lambda_, server_files_);
   }
 
   template <bool isRequest, class Body, class Fields>
