@@ -9,6 +9,7 @@
 #include "file_map.h"
 #include "filesystem.h"
 #include "html.h"
+#include "http_request_dispatcher.h"
 #include "http_session.h"
 #include "test.h"
 
@@ -79,58 +80,9 @@ auto handle_search_request(
   return send(std::move(response));
 }
 
-constexpr boost::string_view extract_search_items(
-    boost::string_view search_request)
-{
-  auto const search_token = "/search?";
-  return boost::string_view(search_request.substr(sizeof(search_token)));
-}
-
-unittest(test_search_items_extraction) {
-  assert("foo" == extract_search_items("/search?foo"));
-  assert("/search?" == extract_search_items("/search?/search?"));
-  assert("  bar\t/search?" == extract_search_items("/search?  bar\t/search?"));
-}
-
 unittest(test_make_search_html)
 {
   assert(make_search_html({"hello", "world"}, {}).to_string() == "");
-}
-
-template <class sender>
-void request_dispatcher(
-    http::request<http::string_body>&& req,
-    sender&& send,
-    file_map const& server_files)
-{
-  // Returns a bad request response
-  auto const bad_request = [&req](beast::string_view why) {
-    http::response<http::string_body> res{http::status::bad_request,
-                                          req.version()};
-    res.set(http::field::content_type, "text/html");
-    res.keep_alive(req.keep_alive());
-    res.body() = std::string(why);
-    res.prepare_payload();
-    return res;
-  };
-
-  // Make sure we can handle the method
-  if (req.method() != http::verb::get)
-    return send(bad_request("Unknown HTTP-method"));
-
-  if (req.target().empty() || req.target()[0] != '/' ||
-      req.target().find("..") != beast::string_view::npos)
-    return send(bad_request("Illegal request-target"));
-
-  if (req.target().find("/search?") == 0) {
-    return handle_search_request(
-        extract_search_items(req.target()), req.keep_alive(), send,
-        server_files);
-  } else if (req.target() == "/") {
-    return handle_root_request(req, send, server_files);
-  } else {
-    return send(bad_request("Illegal request"));
-  }
 }
 
 auto get_dispatcher_response(http::request<http::string_body>&& request)
@@ -140,7 +92,7 @@ auto get_dispatcher_response(http::request<http::string_body>&& request)
     response = r_;
   };
 
-  request_dispatcher(move(request), move(forwarder), {{"/", "toto"}});
+  dispatch_request(move(request), move(forwarder), {{"/", "toto"}});
 
   return response;
 }
@@ -233,7 +185,7 @@ struct http_session_impl
     if (ec)
       return fail(ec, "read");
 
-    request_dispatcher(std::move(req_), lambda_, server_files_);
+    dispatch_request(std::move(req_), lambda_, server_files_);
   }
 
   template <bool isRequest, class Body, class Fields>
