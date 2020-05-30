@@ -20,6 +20,7 @@ using tcp = boost::asio::ip::tcp;
 
 using namespace std::chrono_literals;
 using namespace std;
+using namespace http;
 
 namespace
 {
@@ -130,19 +131,17 @@ auto get_dispatcher_response(http::request<http::string_body>&& request)
 unittest(test_basic_get_returns_2xx)
 {
   assert(
-      http::to_status_class(
-          get_dispatcher_response(
-              http::request<http::string_body>(http::verb::get, "/", 11))
-              .result()) == http::status_class::successful);
+      http::to_status_class(get_dispatcher_response(
+                                request<http::string_body>(verb::get, "/", 11))
+                                .result()) == http::status_class::successful);
 }
 
 unittest(test_get_with_dots_returns_4xx)
 {
   assert(
-      http::to_status_class(
-          get_dispatcher_response(
-              http::request<http::string_body>(http::verb::get, "..", 11))
-              .result()) == http::status_class::client_error);
+      http::to_status_class(get_dispatcher_response(
+                                request<http::string_body>(verb::get, "..", 11))
+                                .result()) == http::status_class::client_error);
 }
 
 struct http_session_impl
