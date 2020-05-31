@@ -27,20 +27,6 @@ namespace
 {
 using namespace gky;
 
-/*
-auto make_html_response(std::string const& content)
-{
-  http::response<http::string_body> response;
-
-  response.set(http::field::server, BOOST_BEAST_VERSION_STRING);
-  response.set(http::field::content_type, "text/html");
-
-  response.body() = content;
-
-  return response;
-}
-*/
-
 void fail(beast::error_code ec, char const* what)
 {
   std::cerr << what << ": " << ec.message() << "\n";
