@@ -9,7 +9,7 @@
 #include "file_map.h"
 #include "filesystem.h"
 #include "html.h"
-#include "http_request_dispatcher.h"
+#include "http_request_handler.h"
 #include "http_session.h"
 #include "test.h"
 
@@ -27,6 +27,7 @@ namespace
 {
 using namespace gky;
 
+/*
 auto make_html_response(std::string const& content)
 {
   http::response<http::string_body> response;
@@ -38,22 +39,11 @@ auto make_html_response(std::string const& content)
 
   return response;
 }
+*/
 
 void fail(beast::error_code ec, char const* what)
 {
   std::cerr << what << ": " << ec.message() << "\n";
-}
-
-template <class Body, class Allocator, class Send>
-auto handle_root_request(
-    http::request<Body, http::basic_fields<Allocator>> const& req,
-    Send const& send,
-    file_map const& server_files)
-{
-  auto const content = server_files.at(std::string(req.target()));
-  auto response = make_html_response(content);
-  response.keep_alive(req.keep_alive());
-  return send(std::move(response));
 }
 
 using token = string;
@@ -66,51 +56,9 @@ html make_search_html(tokens const&, ::search_database const&)
   return html();
 }
 
-template <typename sender>
-auto handle_search_request(
-    boost::string_view search_request,
-    bool keep_alive,
-    sender const& send,
-    file_map const&)
-{
-  (void)(search_request);
-  auto const html = make_search_html({}, {});
-  auto response = make_html_response(html.to_string());
-  response.keep_alive(keep_alive);
-  return send(std::move(response));
-}
-
 unittest(test_make_search_html)
 {
   assert(make_search_html({"hello", "world"}, {}).to_string() == "");
-}
-
-auto get_dispatcher_response(http::request<http::string_body>&& request)
-{
-  http::response<http::string_body> response;
-  auto forwarder = [&](http::response<http::string_body>&& r_) {
-    response = r_;
-  };
-
-  dispatch_request(move(request), move(forwarder), {{"/", "toto"}});
-
-  return response;
-}
-
-unittest(test_basic_get_returns_2xx)
-{
-  assert(
-      http::to_status_class(get_dispatcher_response(
-                                request<http::string_body>(verb::get, "/", 11))
-                                .result()) == http::status_class::successful);
-}
-
-unittest(test_get_with_dots_returns_4xx)
-{
-  assert(
-      http::to_status_class(get_dispatcher_response(
-                                request<http::string_body>(verb::get, "..", 11))
-                                .result()) == http::status_class::client_error);
 }
 
 struct http_session_impl
@@ -146,7 +94,7 @@ struct http_session_impl
   };
 
   http_session_impl(tcp::socket&& socket, file_map const& server_files)
-      : stream_(std::move(socket)), lambda_(*this), server_files_(server_files)
+      : stream_(std::move(socket)), send_(*this), server_files_(server_files)
   {
   }
 
@@ -185,7 +133,7 @@ struct http_session_impl
     if (ec)
       return fail(ec, "read");
 
-    dispatch_request(std::move(req_), lambda_, server_files_);
+    send_(make_request_handler(std::move(req_), server_files_)->response());
   }
 
   template <bool isRequest, class Body, class Fields>
@@ -238,7 +186,8 @@ struct http_session_impl
   beast::flat_buffer buffer_;
   http::request<http::string_body> req_;
   std::shared_ptr<void> res_;
-  send_lambda lambda_;
+  send_lambda send_;
+
   file_map server_files_;
 };
 
