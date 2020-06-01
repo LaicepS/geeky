@@ -12,4 +12,9 @@ BraceWrapping:
   AfterStruct: true
   AfterNamespace: true
 
+
+BinPackParameters: false
+
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+BreakConstructorInitializers: BeforeComma
 ...

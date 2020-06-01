@@ -30,12 +30,13 @@ struct connection_listener_impl
       io_context& ioc,
       unsigned short port,
       file_map const& http_files)
-      : ioc_(ioc), acceptor_(make_strand(ioc)), http_files_(http_files)
+      : ioc_(ioc)
+      , acceptor_(make_strand(ioc))
+      , http_files_(http_files)
   {
     auto endpoint = tcp::endpoint(tcp::v4(), port);
     setup_acceptor(endpoint);
   }
-
   void setup_acceptor(ip::tcp::endpoint endpoint)
   {
     boost::beast::error_code ec;

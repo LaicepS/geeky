@@ -57,7 +57,10 @@ struct http_session_impl
   {
     http_session_impl& self_;
 
-    explicit send_lambda(http_session_impl& self) : self_(self) {}
+    explicit send_lambda(http_session_impl& self)
+        : self_(self)
+    {
+    }
 
     template <bool isRequest, class Body, class Fields>
     void operator()(http::message<isRequest, Body, Fields>&& msg) const
@@ -82,7 +85,9 @@ struct http_session_impl
   };
 
   http_session_impl(tcp::socket&& socket, file_map const& server_files)
-      : stream_(std::move(socket)), send_(*this), server_files_(server_files)
+      : stream_(std::move(socket))
+      , send_(*this)
+      , server_files_(server_files)
   {
   }
 
