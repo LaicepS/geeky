@@ -31,5 +31,6 @@ set(CMAKE_CXX_FLAGS "-std=c++17 \
    ${CMAKE_CXX_FLAGS}")
 
 add_executable(geeky "src/geeky.cpp" "src/http_helpers.cpp" "src/filesystem.cpp"
-  "src/http_session.cpp" "src/html.cpp" "src/http_request_handler.cpp")
+  "src/http_session.cpp" "src/html.cpp" "src/http_request_handler.cpp"
+  "src/connection_listener.cpp")
 target_link_libraries(geeky LINK_PUBLIC pthread)

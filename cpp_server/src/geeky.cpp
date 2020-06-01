@@ -50,8 +50,7 @@ file_map populate(string const& root) {
 
 struct server_guard {
   server_guard(::port port, ::file_map const& file_map) {
-    auto const endpoint = tcp::endpoint(tcp::v4(), port);
-    server_ = std::make_shared<connection_listener>(ioc_, endpoint, file_map);
+    server_ = make_connection_listener(ioc_, port, file_map);
 
     server_thread = thread([server = this->server_, &ioc = this->ioc_]() {
       server->run();
@@ -139,9 +138,7 @@ int main(int argc, char* argv[]) {
 
   auto const file_map = populate(root_path);
 
-  std::make_shared<gky::connection_listener>(
-      ioc, tcp::endpoint{tcp::v4(), port}, file_map)
-      ->run();
+  make_connection_listener(ioc, port, file_map)->run();
 
   start_ioc_threads(ioc, threads);
 

@@ -6,7 +6,6 @@
 #include <string>
 
 namespace gky {
-
 using port = unsigned short;
 using path = std::string;
 
