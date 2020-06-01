@@ -6,7 +6,6 @@
 #include "boost/asio.hpp"
 
 #include "file_map.h"
-#include "http_session.h"
 
 namespace gky
 {

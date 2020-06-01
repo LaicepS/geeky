@@ -21,7 +21,6 @@ using tcp = boost::asio::ip::tcp;
 
 using namespace std::chrono_literals;
 using namespace std;
-using namespace http;
 
 namespace
 {

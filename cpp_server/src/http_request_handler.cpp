@@ -1,3 +1,5 @@
+#include <memory>
+
 #include "http_request_handler.h"
 
 #include "boost/beast.hpp"
@@ -5,6 +7,7 @@
 #include "test.h"
 
 using namespace gky;
+using namespace std;
 
 namespace http = boost::beast::http;
 
@@ -27,9 +30,9 @@ unittest(test_search_items_extraction)
 struct bad_request_handler : request_handler
 {
   bad_request_handler(
-      http::request<http::string_body>&& req,
+      http::request<http::string_body> const& req,
       std::string const& why)
-      : req(std::move(req))
+      : req(req)
       , why(why)
   {
   }
@@ -106,23 +109,22 @@ std::unique_ptr<request_handler> make_request_handler(
 {
   // Make sure we can handle the method
   if (req.method() != http::verb::get)
-    return std::make_unique<bad_request_handler>(
-        std::move(req), "Unknown HTTP-method");
+    return make_unique<bad_request_handler>(req, "Unknown HTTP-method");
 
   if (req.target().empty() || req.target()[0] != '/' ||
       req.target().find("..") != boost::string_view::npos)
-    return std::make_unique<bad_request_handler>(
-        std::move(req), "Illegal request-target");
+    return make_unique<bad_request_handler>(req, "Illegal request-target");
   else if (req.target() == "/")
-    return std::make_unique<root_request_handler>(req, server_files);
+    return make_unique<root_request_handler>(req, server_files);
   else if (req.target().find("/search?") == 0)
-    return std::make_unique<search_request_handler>(req.keep_alive());
+    return make_unique<search_request_handler>(req.keep_alive());
   else
-    return std::make_unique<bad_request_handler>(
-        std::move(req), "Illegal request-target");
+    return make_unique<bad_request_handler>(req, "Illegal request-target");
 }
 }  // namespace gky
 
+namespace
+{
 unittest(test_bad_request_makes_bad_request_handler)
 {
   assert(dynamic_cast<bad_request_handler*>(
@@ -148,3 +150,4 @@ unittest(test_search_request_makes_search_handler)
           {{"/", "foo"}})
           .get()));
 }
+}  // namespace

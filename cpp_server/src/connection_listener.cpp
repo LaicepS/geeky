@@ -5,6 +5,7 @@
 #include "boost/beast.hpp"
 
 #include "connection_listener.h"
+#include "http_session.h"
 
 using namespace gky;
 using namespace boost::asio;
@@ -37,6 +38,7 @@ struct connection_listener_impl
     auto endpoint = tcp::endpoint(tcp::v4(), port);
     setup_acceptor(endpoint);
   }
+
   void setup_acceptor(ip::tcp::endpoint endpoint)
   {
     boost::beast::error_code ec;
