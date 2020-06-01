@@ -114,12 +114,14 @@ std::unique_ptr<request_handler> make_request_handler(
   if (req.target().empty() || req.target()[0] != '/' ||
       req.target().find("..") != boost::string_view::npos)
     return make_unique<bad_request_handler>(req, "Illegal request-target");
-  else if (req.target() == "/")
+
+  if (req.target() == "/")
     return make_unique<root_request_handler>(req, server_files);
-  else if (req.target().find("/search?") == 0)
+
+  if (req.target().find("/search?") == 0)
     return make_unique<search_request_handler>(req.keep_alive());
-  else
-    return make_unique<bad_request_handler>(req, "Illegal request-target");
+
+  return make_unique<bad_request_handler>(req, "Illegal request-target");
 }
 }  // namespace gky
 
