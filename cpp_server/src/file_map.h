@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 
-namespace gky {
+namespace gky
+{
 using file_map = std::unordered_map<std::string, std::string>;
 }

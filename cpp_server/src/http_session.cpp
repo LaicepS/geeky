@@ -49,10 +49,12 @@ unittest(test_make_search_html)
 
 struct http_session_impl
     : std::enable_shared_from_this<http_session_impl>
-    , gky::http_session {
+    , gky::http_session
+{
   // This is the C++11 equivalent of a generic lambda.
   // The function object is used to send an HTTP message.
-  struct send_lambda {
+  struct send_lambda
+  {
     http_session_impl& self_;
 
     explicit send_lambda(http_session_impl& self) : self_(self) {}

@@ -34,13 +34,14 @@ using tcp = boost::asio::ip::tcp;  // from <boost/asio/ip/tcp.hpp>
 
 using byte = unsigned char;
 
-
 // Report a failure
-void fail(beast::error_code ec, char const* what) {
+void fail(beast::error_code ec, char const* what)
+{
   std::cerr << what << ": " << ec.message() << "\n";
 }
 
-file_map populate(string const& root) {
+file_map populate(string const& root)
+{
   file_map sv;
   sv["/"] = load_file(root + "/index.html");
   sv["/index.css"] = load_file(root + "/index.css");
@@ -48,8 +49,10 @@ file_map populate(string const& root) {
   return sv;
 }
 
-struct server_guard {
-  server_guard(::port port, ::file_map const& file_map) {
+struct server_guard
+{
+  server_guard(::port port, ::file_map const& file_map)
+  {
     server_ = make_connection_listener(ioc_, port, file_map);
 
     server_thread = thread([server = this->server_, &ioc = this->ioc_]() {
@@ -58,7 +61,8 @@ struct server_guard {
     });
   }
 
-  ~server_guard() {
+  ~server_guard()
+  {
     server_->stop();
     server_thread.join();
   }
@@ -68,19 +72,22 @@ struct server_guard {
   thread server_thread;
 };
 
-struct basic_server {
+struct basic_server
+{
   ::port port = 8081;
   ::file_map file_map = populate(dirname(__FILE__) + "/html");
   unique_ptr<server_guard> server_guard =
       std::make_unique<::server_guard>(port, file_map);
 };
 
-unittest(test_get_root) {
+unittest(test_get_root)
+{
   auto [port, file_map, server_guard] = basic_server();
 
   auto [response, buffer] = http_get(port, "/");
-  assert(http::to_status_class(response.result()) ==
-         http::status_class::successful);
+  assert(
+      http::to_status_class(response.result()) ==
+      http::status_class::successful);
   assert(response.at("Content-Type") == "text/html");
   assert(beast::buffers_to_string(response.body().data()) == file_map.at("/"));
 }
@@ -89,16 +96,19 @@ unittest(test_unsupported_verb)
 {
   auto [port, file_map, server_guard] = basic_server();
   auto [response, _] = http_request(http::verb::mkcalendar, port, "/");
-  assert(http::to_status_class(response.result()) ==
-         http::status_class::client_error);
+  assert(
+      http::to_status_class(response.result()) ==
+      http::status_class::client_error);
 }
 
-unittest(test_search) {
+unittest(test_search)
+{
   auto [port, file_map, server_guard] = basic_server();
 
   auto [response, _] = http_get(port, "/search?toto");
-  assert(http::to_status_class(response.result()) ==
-         http::status_class::successful);
+  assert(
+      http::to_status_class(response.result()) ==
+      http::status_class::successful);
 }
 
 unittest(test_get_wrong_url)
@@ -106,11 +116,13 @@ unittest(test_get_wrong_url)
   auto [port, file_map, server_guard] = basic_server();
 
   auto [response, _] = http_get(port, "/bad_url");
-  assert(http::to_status_class(response.result()) ==
-         http::status_class::client_error);
+  assert(
+      http::to_status_class(response.result()) ==
+      http::status_class::client_error);
 }
 
-auto get_args(int argc, char** argv) {
+auto get_args(int argc, char** argv)
+{
   if (argc != 3) {
     std::cerr << "Usage: http-server-async <port> <root_path>\n"
               << "Example:\n"
@@ -121,14 +133,16 @@ auto get_args(int argc, char** argv) {
   return make_tuple(::port(std::atoi(argv[1])), string(argv[2]));
 }
 
-void start_ioc_threads(io_context& ioc, int num_threads) {
+void start_ioc_threads(io_context& ioc, int num_threads)
+{
   vector<thread> v;
   for (auto i = 0; i < num_threads - 1; i++)
     v.emplace_back([&ioc] { ioc.run(); });
   ioc.run();
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
   tester::instance().run_tests();
 
   auto const [port, root_path] = get_args(argc, argv);

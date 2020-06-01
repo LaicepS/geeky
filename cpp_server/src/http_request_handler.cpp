@@ -24,7 +24,8 @@ unittest(test_search_items_extraction)
   assert("  bar\t/search?" == extract_search_items("/search?  bar\t/search?"));
 }
 
-struct bad_request_handler : request_handler {
+struct bad_request_handler : request_handler
+{
   bad_request_handler(
       http::request<http::string_body>&& req,
       std::string const& why)
@@ -59,7 +60,8 @@ auto make_html_response(std::string const& content)
   return response;
 }
 
-struct root_request_handler : request_handler {
+struct root_request_handler : request_handler
+{
   root_request_handler(
       http::request<http::string_body> const& req,
       gky::file_map const& server_files)
@@ -77,7 +79,8 @@ struct root_request_handler : request_handler {
   gky::file_map const& server_files;
 };
 
-struct search_request_handler : request_handler {
+struct search_request_handler : request_handler
+{
   search_request_handler(bool keep_alive) : keep_alive_(keep_alive) {}
 
   virtual http::response<http::string_body> response() override

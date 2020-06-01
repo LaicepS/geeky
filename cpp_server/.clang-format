@@ -4,5 +4,12 @@ BreakInheritanceList: BeforeComma
 AlignAfterOpenBracket: AlwaysBreak
 AllowShortBlocksOnASingleLine: false
 AllowShortFunctionsOnASingleLine: Empty
-BreakBeforeBraces: Linux
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterFunction: true
+  AfterClass: true
+  AfterStruct: true
+  AfterNamespace: true
+
 ...

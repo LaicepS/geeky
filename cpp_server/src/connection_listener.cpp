@@ -24,7 +24,8 @@ void throw_error(const boost::system::error_code& ec, const std::string& error)
 
 struct connection_listener_impl
     : std::enable_shared_from_this<connection_listener_impl>
-    , connection_listener {
+    , connection_listener
+{
   connection_listener_impl(
       io_context& ioc,
       unsigned short port,
@@ -96,4 +97,4 @@ std::shared_ptr<connection_listener> make_connection_listener(
 {
   return std::make_shared<connection_listener_impl>(ioc, port, http_files);
 }
-}
+}  // namespace gky

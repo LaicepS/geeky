@@ -12,9 +12,10 @@ using namespace std;
 using tcp = boost::asio::ip::tcp;  // from <boost/asio/ip/tcp.hpp>
 
 #include <iostream>
-namespace gky {
-
-http_response http_request(http::verb method, port port, string const& path) {
+namespace gky
+{
+http_response http_request(http::verb method, port port, string const& path)
+{
   auto ioc = io_context();
 
   auto stream = beast::tcp_stream{ioc};
@@ -44,7 +45,8 @@ http_response http_request(http::verb method, port port, string const& path) {
   return {response, read_buffer};
 }
 
-http_response http_get(port port, const string& path) {
+http_response http_get(port port, const string& path)
+{
   return http_request(http::verb::get, port, path);
 }
 }  // namespace gky

@@ -1,8 +1,9 @@
 #pragma once
 
-namespace gky {
-
-struct tester {
+namespace gky
+{
+struct tester
+{
   using test_fn = void (*)();
 
   static tester& instance()
@@ -32,7 +33,7 @@ struct tester {
 
 #define CAT_(x, y) x##y
 #define CAT(x, y) CAT_(x, y)
-#define unittest(FUN)           \
-  void FUN();                   \
+#define unittest(FUN)                                         \
+  void FUN();                                                 \
   auto CAT(FUN, __LINE__) = tester::instance().add_test(FUN); \
   void FUN()

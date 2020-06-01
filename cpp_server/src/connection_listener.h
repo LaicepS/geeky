@@ -8,8 +8,10 @@
 #include "file_map.h"
 #include "http_session.h"
 
-namespace gky {
-struct connection_listener {
+namespace gky
+{
+struct connection_listener
+{
   virtual void run() = 0;
   virtual void stop() = 0;
   virtual ~connection_listener() {}
