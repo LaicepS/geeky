@@ -23,7 +23,7 @@ more-itertools==7.2.0
 nodeenv==1.3.3
 parsel==1.5.2
 pil-compat==1.0.0
-Pillow==6.2.0
+Pillow==8.3.2
 pre-commit==1.18.3
 pyasn1==0.4.7
 pyasn1-modules==0.2.6
